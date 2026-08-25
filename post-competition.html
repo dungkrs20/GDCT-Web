@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tạo cuộc thi – Import câu hỏi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f6f8;
+    color: #333;
+  }
+
+  header {
+    background: #0d47a1;
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 28px auto;
+    padding: 0 16px;
+  }
+
+  .toolbar {
+  display:flex; justify-content:space-between; margin-bottom:20px
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .card h2 {
+    margin-top: 0;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-top: 14px;
+    font-size: 14px;
+  }
+
+  input, select {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    transition: 0.2s;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
+  }
+
+  .row {
+    display: flex;
+    gap: 16px;
+  }
+
+  .row > div {
+    flex: 1;
+  }
+
+  .note {
+    font-size: 13px;
+    color: #666;
+    margin-top: 10px;
+    background: #f5f7fa;
+    padding: 12px;
+    border-left: 4px solid #1976d2;
+    border-radius: 4px;
+  }
+
+  .actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .actions-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+  }
+
+  .btn-outline {
+    background: #f5f7fa;
+    color: #0d47a1;
+    border: 1px dashed #90caf9;
+  }
+
+  .btn-outline:hover {
+    background: #e3f2fd;
+    border-color: #1976d2;
+  }
+
+
+  .btn {
+    padding:10px 14px; 
+    border:none; 
+    border-radius:6px;
+    cursor:pointer; 
+    font-weight:600
+  }
+  .btn-back { background:#eee }
+
+  .btn-save {
+    background: #1976d2;
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .btn-save:hover {
+    background: #125ea8;
+  }
+
+  .btn-import {
+    background: #2e7d32;
+    color: #fff;
+  }
+
+  .btn-import:hover {
+    background: #246528;
+  }
+
+  @media (max-width: 700px) {
+    .row {
+      flex-direction: column;
+    }
+  }
+
+  #btnDownloadTemplate {
+    background: #e3f2fd;
+    color: #0d47a1;
+    border: 1px solid #90caf9;
+  }
+
+  #btnDownloadTemplate:hover {
+        background: #bbdefb;
+  }
+
+  #bannerPreview {
+  background: #fafafa;
+  }
+
+</style>
+
+
+</head>
+
+<body>
+
+<header>
+  <h1>🏆 Tạo cuộc thi</h1>
+</header>
+
+<div class="container">
+
+  <div class="toolbar">
+      <button class="btn btn-back" id="btnBack">⬅ Quay lại</button>
+  </div>
+
+  <!-- ===== CARD: THÔNG TIN CUỘC THI ===== -->
+  <div class="card">
+    <h2>📋 Thông tin cuộc thi</h2>
+
+    <label>Tên cuộc thi</label>
+    <input id="title" placeholder="Ví dụ: Thi tìm hiểu Lịch sử Đảng">
+
+    <div class="row">
+        <div>
+        <label>Thời gian bắt đầu</label>
+        <input type="datetime-local" id="startTime">
+        </div>
+        <div>
+        <label>Thời gian kết thúc</label>
+        <input type="datetime-local" id="endTime">
+        </div>
+    </div>
+
+    <div class="row">
+        <div>
+        <label>Số câu hỏi mỗi lần thi</label>
+        <input
+            type="number"
+            id="questionCount"
+            min="1"
+            placeholder="Ví dụ: 20">
+        </div>
+
+        <div>
+        <label>Thời gian làm bài (phút)</label>
+        <input
+            type="number"
+            id="durationMinutes"
+            min="1"
+            placeholder="Ví dụ: 30">
+        </div>
+    </div>
+      <label>Ảnh banner cuộc thi</label>
+      <input type="file" id="bannerFile" accept="image/*">
+
+    <img
+      id="bannerPreview"
+      style="display:none; margin-top:10px; max-width: 1000px; max-height:200px;
+          object-fit:cover; border-radius:8px; border:1px solid #ddd">
+
+  </div>
+
+
+  <!-- ===== CARD: IMPORT CÂU HỎI ===== -->
+  <div class="card">
+    <h2>📥 Import câu hỏi từ Excel</h2>
+
+    <input type="file" id="excelFile" accept=".xlsx,.xls">
+
+    <div class="note">
+      ✔️ File Excel gồm: <b>STT | Câu hỏi | A | B | C | D | Đáp án</b><br>
+      ✔️ Đáp án bắt buộc là <b>A / B / C / D</b> (chữ in hoa)<br>
+      ✔️ Tải file mẫu Excel để nhập chính xác câu hỏi
+    </div>
+
+    <div class="actions actions-between">
+      <button class="btn btn-outline" id="btnDownloadTemplate">
+        ⬇ Tải file mẫu Excel
+      </button>
+
+      <button class="btn btn-save" id="btnSave">
+        💾 Lưu cuộc thi
+      </button>
+    </div>
+
+
+
+  </div>
+
+</div>
+
+
+<!-- ===== SCRIPT ===== -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+<script type="module">
+  import { requireAuth } from "./js/auth.js";
+  import { db } from "./js/firebase.js";
+  import {
+  collection,
+  addDoc,
+  doc,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
+  getDocs,
+  deleteDoc,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+import {
+  getStorage,
+  ref,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+
+  requireAuth();
+
+    // ===== CLOUDINARY =====
+    const CLOUD_NAME = "dgqcsis3c";        
+    const UPLOAD_PRESET = "competition_image";  
+
+      /* ===== BACK ===== */
+    history.pushState({}, "", location.href);
+    window.addEventListener("popstate", () => {
+      location.replace("manage-competition.html");
+    });
+    document.getElementById("btnBack").onclick =
+      () => location.replace("manage-competition.html");
+
+    // Xem trước ảnh banner
+  const bannerFileInput = document.getElementById("bannerFile");
+  const bannerPreview = document.getElementById("bannerPreview");
+
+  let selectedBannerFile = null;
+
+  bannerFileInput.onchange = () => {
+    const file = bannerFileInput.files[0];
+    if (!file) return;
+
+    selectedBannerFile = file;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      bannerPreview.src = e.target.result;
+      bannerPreview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  //Upload banner
+
+    function showProgress(text, percent) {
+    document.getElementById("progressOverlay").style.display = "flex";
+    document.getElementById("progressText").innerText = text;
+    document.getElementById("progressBar").style.width = percent + "%";
+    document.getElementById("progressPercent").innerText = percent + "%";
+  }
+
+  function hideProgress() {
+    document.getElementById("progressOverlay").style.display = "none";
+    document.getElementById("progressBar").style.width = "0%";
+    document.getElementById("progressPercent").innerText = "0%";
+  }
+
+
+  async function uploadBannerToCloudinary(file) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const fd = new FormData();
+
+      fd.append("file", file);
+      fd.append("upload_preset", UPLOAD_PRESET);
+      fd.append("folder", "competition-banners");
+
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          showProgress("Đang tải ảnh banner…", percent);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const res = JSON.parse(xhr.responseText);
+          resolve(res.secure_url);
+        } else {
+          reject("Upload banner thất bại");
+        }
+      };
+
+      xhr.onerror = () => reject("Lỗi mạng khi upload banner");
+
+      xhr.open(
+        "POST",
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`
+      );
+      xhr.send(fd);
+    });
+    }
+
+
+  const params = new URLSearchParams(location.search);
+  const competitionId = params.get("id");
+
+  let currentCompetitionId = competitionId;
+
+  const titleEl = document.getElementById("title");
+  const startTimeEl = document.getElementById("startTime");
+  const endTimeEl = document.getElementById("endTime");
+  const questionCountEl = document.getElementById("questionCount");
+  const durationMinutesEl = document.getElementById("durationMinutes");
+  const excelFileEl = document.getElementById("excelFile");
+
+
+  async function loadCompetitionForEdit() {
+  if (!currentCompetitionId) return; // chế độ tạo mới
+
+  const ref = doc(db, "competitions", currentCompetitionId);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    alert("❌ Cuộc thi không tồn tại");
+    return;
+  }
+
+  const d = snap.data();
+
+  // ===== ĐỔ DỮ LIỆU VÀO FORM =====
+  titleEl.value = d.title || "";
+  questionCountEl.value = d.question_count || "";
+  durationMinutesEl.value = d.duration_minutes || "";
+
+  if (d.start_time) {
+    startTimeEl.value =
+      d.start_time.toDate().toISOString().slice(0, 16);
+  }
+
+  if (d.end_time) {
+    endTimeEl.value =
+      d.end_time.toDate().toISOString().slice(0, 16);
+  }
+
+  // ===== HIỂN THỊ ẢNH BANNER CŨ =====
+  if (d.banner_url) {
+    bannerUrl = d.banner_url;
+    bannerPreview.src = bannerUrl;
+    bannerPreview.style.display = "block";
+  }
+
+  // ===== ĐỔI TIÊU ĐỀ TRANG =====
+  document.querySelector("header h1").innerText = "✏️ Sửa thông tin cuộc thi";
+  }
+
+
+  //Các biến tạm thời
+  let bannerUrl = null;
+  let parsedQuestions = [];
+
+  // ===== LƯU CUỘC THI =====
+  document.getElementById("btnSave").onclick = async () => {
+    const hasNewExcel = excelFileEl.files.length > 0;
+
+  // ===== VALIDATE THÔNG TIN CUỘC THI =====
+    if (!titleEl.value.trim()) {
+      alert("❌ Chưa nhập tên cuộc thi");
+      return;
+    }
+
+    if (!startTimeEl.value) {
+      alert("❌ Chưa chọn thời gian bắt đầu");
+      return;
+    }
+
+    if (!endTimeEl.value) {
+      alert("❌ Chưa chọn thời gian kết thúc");
+      return;
+    }
+
+    if (new Date(startTimeEl.value) >= new Date(endTimeEl.value)) {
+      alert("❌ Thời gian kết thúc phải sau thời gian bắt đầu");
+      return;
+    }
+
+    if (!questionCountEl.value || Number(questionCountEl.value) <= 0) {
+      alert("❌ Số câu hỏi mỗi lần thi phải lớn hơn 0");
+      return;
+    }
+
+    if (!durationMinutesEl.value || Number(durationMinutesEl.value) <= 0) {
+      alert("❌ Thời gian làm bài phải lớn hơn 0 phút");
+      return;
+    }
+
+
+    // ===== VALIDATE EXCEL TRƯỚC KHI LƯU =====
+    if (excelFileEl.files.length) {
+      const file = excelFileEl.files[0];
+      const buffer = await file.arrayBuffer();
+      
+      const workbook = XLSX.read(buffer);
+      const sheetName = workbook.SheetNames[0];
+
+      const sheet = workbook.Sheets[sheetName];
+
+      const rows = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: "",
+        raw: false
+      });
+
+      let validQuestionCount = 0;
+
+      for (let i = 9; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || !r[1]) continue;
+
+        const answer = String(r[6]).trim().toUpperCase();
+
+        if (
+          r[1] && r[2] && r[3] && r[4] && r[5] &&
+          ["A", "B", "C", "D"].includes(answer)
+        ) {
+          validQuestionCount++;
+        }
+      }
+
+
+        
+
+      const requiredCount = Number(questionCountEl.value);
+
+      if (validQuestionCount < requiredCount) {
+        alert(
+          `❌ File Excel chỉ có ${validQuestionCount} câu hỏi hợp lệ.\n` +
+          `Số câu hỏi mỗi lần thi là ${requiredCount}.\n\n` +
+          `Vui lòng bổ sung thêm câu hỏi.`
+        );
+        return; // ⛔ DỪNG TOÀN BỘ – KHÔNG LƯU GÌ
+      }
+    }
+
+
+    // ===== VALIDATE RIÊNG KHI TẠO CUỘC THI MỚI =====
+    const isCreateMode = !currentCompetitionId;
+
+    if (isCreateMode) {
+      if (!selectedBannerFile) {
+        alert("❌ Chưa chọn ảnh banner cuộc thi");
+        return;
+      }
+
+      if (!excelFileEl.files.length) {
+        alert("❌ Chưa import file Excel câu hỏi");
+        return;
+      }
+    }
+
+
+  try {
+  showProgress("Đang xử lý dữ liệu…", 10);
+
+    /* ===== 1. UPLOAD BANNER ===== */
+    if (currentCompetitionId && !selectedBannerFile) {
+      const snap = await getDoc(doc(db, "competitions", currentCompetitionId));
+      bannerUrl = snap.data()?.banner_url || null;
+    }
+    if (selectedBannerFile) {
+        bannerUrl = await uploadBannerToCloudinary(selectedBannerFile);
+    }
+
+    /* ===== 2. PARSE EXCEL ===== */
+    parsedQuestions.length = 0;
+
+    if (excelFileEl.files.length) {
+      const file = excelFileEl.files[0];
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer);
+      const sheetName = workbook.SheetNames[0];
+
+      const sheet = workbook.Sheets[sheetName];
+
+      const rows = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: "",
+        raw: false
+      });
+
+
+      parsedQuestions = [];
+
+      for (let i = 9; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || !r[1]) continue;
+
+        const answer = String(r[6]).trim().toUpperCase();
+        if (!["A", "B", "C", "D"].includes(answer)) continue;
+
+        parsedQuestions.push({
+          index: Number(r[0]),
+          question: r[1],
+          A: r[2],
+          B: r[3],
+          C: r[4],
+          D: r[5],
+          answer
+        });
+      }
+
+
+
+      if (parsedQuestions.length < Number(questionCountEl.value)) {
+        throw new Error("Không đủ câu hỏi hợp lệ");
+      }
+      }
+
+    /* ===== 3. LƯU CUỘC THI ===== */
+    showProgress("Đang lưu cuộc thi…", 50);
+
+    let competitionRef;
+
+    if (currentCompetitionId) {
+      competitionRef = doc(db, "competitions", currentCompetitionId);
+      await updateDoc(competitionRef, {
+        title: titleEl.value.trim(),
+        start_time: new Date(startTimeEl.value),
+        end_time: new Date(endTimeEl.value),
+        question_count: Number(questionCountEl.value),
+        duration_minutes: Number(durationMinutesEl.value),
+        banner_url: bannerUrl,
+        updated_at: serverTimestamp()
+      });
+    } else {
+      competitionRef = await addDoc(collection(db, "competitions"), {
+        title: titleEl.value.trim(),
+        start_time: new Date(startTimeEl.value),
+        end_time: new Date(endTimeEl.value),
+        question_count: Number(questionCountEl.value),
+        duration_minutes: Number(durationMinutesEl.value),
+        banner_url: bannerUrl,
+        created_at: serverTimestamp()
+      });
+    }
+
+
+    /* ===== 4. LƯU CÂU HỎI (BATCH CHUNK) ===== */
+    const qRef = collection(db, "competitions", competitionRef.id, "questions");
+
+    if (hasNewExcel) {
+
+      // ===== 1️⃣ XOÁ CÂU CŨ (BATCH RIÊNG) =====
+      const oldQs = await getDocs(qRef);
+
+      if (!oldQs.empty) {
+        let deleteBatch = writeBatch(db);
+        let count = 0;
+
+        for (const d of oldQs.docs) {
+          deleteBatch.delete(d.ref);
+          count++;
+
+          if (count === 500) {
+            await deleteBatch.commit();
+            deleteBatch = writeBatch(db);
+            count = 0;
+          }
+        }
+
+        if (count > 0) {
+          await deleteBatch.commit();
+        }
+      }
+
+      // ===== 2️⃣ THÊM CÂU MỚI (CHIA BLOCK) =====
+      const CHUNK_SIZE = 450; // an toàn < 500
+      let index = 0;
+
+      while (index < parsedQuestions.length) {
+        const batch = writeBatch(db);
+        const chunk = parsedQuestions.slice(index, index + CHUNK_SIZE);
+
+        chunk.forEach(q => {
+          const newRef = doc(qRef);
+          batch.set(newRef, q);
+        });
+
+        await batch.commit();
+
+        index += CHUNK_SIZE;
+
+        showProgress(
+          "Đang import câu hỏi…",
+          50 + Math.round((index / parsedQuestions.length) * 50)
+        );
+      }
+    }
+
+
+    showProgress("Hoàn tất…", 100);
+    setTimeout(() => {
+      hideProgress();
+      location.replace("manage-competition.html");
+    }, 300);
+
+  } catch (e) {
+    console.error(e);
+    hideProgress();
+    alert("❌ Lỗi khi lưu cuộc thi: " + e.message);
+  }
+  };
+
+
+  // Tải file mẫu
+
+  document.getElementById("btnDownloadTemplate").onclick = () => {
+  try{
+    window.open(
+          "https://res.cloudinary.com/dgqcsis3c/raw/upload/v1768549666/Mau_Cau_Hoi_Trac_Nghiem_wpgolm.xlsx"
+        );
+  } catch (e) {
+        alert("Không tìm thấy file mẫu Excel");
+        console.error(e);
+        hideProgress();
+
+    }
+  };
+
+
+  loadCompetitionForEdit();
+
+
+</script>
+
+    <!-- PROGRESS OVERLAY -->
+    <div id="progressOverlay" style="
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.55);
+      z-index:9999;
+      align-items:center;
+      justify-content:center;
+    ">
+      <div style="
+        background:#fff;
+        padding:24px 28px;
+        border-radius:10px;
+        width:320px;
+        text-align:center;
+      ">
+        <div id="progressText" style="font-weight:600;margin-bottom:12px">
+          Đang xử lý…
+        </div>
+
+        <div style="height:10px;background:#eee;border-radius:6px;overflow:hidden">
+          <div id="progressBar" style="
+            height:100%;
+            width:0%;
+            background:#1976d2;
+            transition:.2s;
+          "></div>
+        </div>
+
+        <div id="progressPercent" style="margin-top:8px;font-size:13px">
+          0%
+        </div>
+      </div>
+    </div>
+
+
+</body>
+</html>

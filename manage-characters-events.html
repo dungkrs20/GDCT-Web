@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý Nhân vật & Sự kiện – Chính trị số</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: #0d47a1;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-email {
+      margin-right: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn-add {
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .btn-add:hover { background: #125ea8; }
+
+    .btn-logout {
+      background: #fff;
+      color: #0d47a1;
+    }
+
+    .btn-edit {
+      background: #1976d2;
+      color: #fff;
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+
+    .btn-delete {
+      background: #d32f2f;
+      color: #fff;
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+
+    #btnBack {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    #btnBack:hover { background: #d5d5d5; }
+
+    /* ===== CONTENT ===== */
+    .container {
+      padding: 24px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    th, td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f0f3f7;
+      font-weight: 600;
+      font-size: 16px;
+      color: #444;
+    }
+
+    tr:hover td {
+      background: #f9fbfd;
+    }
+
+    .thumb {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #eee;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-character {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .badge-event {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .actions button {
+      margin-right: 6px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <h1>👤📅 Quản lý Nhân vật & Sự kiện</h1>
+  <div class="header-right">
+    <span id="userEmail" class="user-email"></span>
+    <button class="btn btn-logout" id="btnLogout">Đăng xuất</button>
+  </div>
+</header>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn" id="btnBack">⬅ Quay lại</button>
+    <button class="btn btn-add" id="btnAdd">➕ Thêm mới</button>
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th width="100">Ảnh</th>
+        <th width="140">Loại</th>
+        <th>Tên</th>
+        <th width="260">Thông tin</th>
+        <th width="160">Hành động</th>
+      </tr>
+    </thead>
+    <tbody id="dataBody"></tbody>
+  </table>
+
+  <div class="empty" id="emptyMsg" style="display:none">
+    Chưa có dữ liệu
+  </div>
+</div>
+
+<!-- ===== SCRIPT ===== -->
+<script type="module">
+  import { requireAuth, logout } from "./js/auth.js";
+  import { auth, db } from "./js/firebase.js";
+  import { onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  import {
+    collection,
+    query,
+    orderBy,
+    getDocs,
+    deleteDoc,
+    doc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // 🔐 Bảo vệ trang
+  requireAuth();
+
+  // 🔒 Push history giả
+  history.pushState({ page: "manage-character-event" }, "", location.href);
+
+  // 🔒 Chặn Back trình duyệt
+  window.addEventListener("popstate", () => {
+    location.replace("dashboard.html");
+  });
+
+  // ===== USER EMAIL =====
+  const userEmail = document.getElementById("userEmail");
+  onAuthStateChanged(auth, user => {
+    userEmail.textContent = user ? user.email : "";
+  });
+
+  document.getElementById("btnLogout").onclick = logout;
+  document.getElementById("btnBack").onclick = () =>
+    location.replace("dashboard.html");
+
+  document.getElementById("btnAdd").onclick = () =>
+    location.replace("post-character-event.html");
+
+  const bodyEl = document.getElementById("dataBody");
+  const emptyEl = document.getElementById("emptyMsg");
+
+  async function loadData() {
+    const q = query(
+      collection(db, "characters_events"),
+      orderBy("created_at", "desc")
+    );
+
+    const snap = await getDocs(q);
+    bodyEl.innerHTML = "";
+
+    if (snap.empty) {
+      emptyEl.style.display = "block";
+      return;
+    }
+
+    emptyEl.style.display = "none";
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const isCharacter = d.type === "character";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.image_url ? `<img src="${d.image_url}" class="thumb">` : ""}</td>
+        <td>
+          <span class="badge ${isCharacter ? "badge-character" : "badge-event"}">
+            ${isCharacter ? "Nhân vật" : "Sự kiện"}
+          </span>
+        </td>
+        <td>${d.name || ""}</td>
+        <td>${isCharacter ? (d.title || "") : (d.time || "")}</td>
+        <td class="actions">
+          <button class="btn btn-edit">Sửa</button>
+          <button class="btn btn-delete">Xóa</button>
+        </td>
+      `;
+
+      tr.querySelector(".btn-edit").onclick = () =>
+        location.replace(`post-character-event.html?id=${docSnap.id}`);
+
+      tr.querySelector(".btn-delete").onclick = async () => {
+        if (!confirm("Xóa mục này?")) return;
+        await deleteDoc(doc(db, "characters_events", docSnap.id));
+        loadData();
+      };
+
+      bodyEl.appendChild(tr);
+    });
+  }
+
+  loadData();
+</script>
+
+</body>
+</html>

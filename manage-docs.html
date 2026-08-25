@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý tài liệu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<style>
+body { margin:0; font-family:Arial; background:#f4f6f8 }
+    header {
+      background: #0d47a1;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-email {
+      margin-right: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #ffffff;        /* 👈 BẮT BUỘC */
+      opacity: 1;            /* 👈 bỏ mờ */
+    }
+    .container { 
+      max-width:1100px; 
+      margin:auto; 
+      padding:24px
+     }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    th, td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f3f7;
+      font-weight: 600;
+      color: #444;
+      font-size: 16px;
+    }
+
+    tr:hover td {
+      background: #f9fbfd;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-logout {
+      background: #fff;
+      color: #0d47a1;
+    }
+    .btn-add { background:#1976d2; color:#fff }
+    .btn-edit { background:#1976d2; color:#fff }
+    .btn-del { background:#d32f2f; color:#fff }
+
+    #btnBack {
+    background: #e0e0e0;
+    color: #333;
+    }
+
+    #btnBack:hover {
+      background: #d5d5d5;
+    }
+    </style>
+</head>
+
+<body>
+
+<header>
+  <h1>📚 Quản lý tài liệu</h1>
+  <div>
+    <span id="userEmail" class="user-email"></span>
+    <button id="btnLogout" class="btn btn-logout">Đăng xuất</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="toolbar" style="justify-content: space-between;">
+    <button class="btn" id="btnBack">⬅ Quay lại</button>
+    <button class="btn btn-add" onclick="location.href='post-docs.html'">
+      ➕ Thêm tài liệu
+    </button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th width="650">Tiêu đề</th>
+        <th width="150">File</th>
+        <th width="150">Ngày</th>
+        <th width="150">Hành động</th>
+      </tr>
+    </thead>
+    <tbody id="docBody"></tbody>
+  </table>
+
+</div>
+
+<script type="module">
+import { requireAuth, logout } from "./js/auth.js";
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  collection, getDocs, deleteDoc, doc, orderBy, query
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+requireAuth();
+
+// Back luôn về dashboard
+history.pushState({}, "", location.href);
+window.addEventListener("popstate", () => {
+  location.replace("dashboard.html");
+});
+
+// Hiển thị email
+onAuthStateChanged(auth, u => {
+  if (u) document.getElementById("userEmail").textContent = u.email;
+});
+
+document.getElementById("btnLogout").onclick = logout;
+
+const body = document.getElementById("docBody");
+
+async function loadDocs() {
+  const q = query(collection(db,"documents"), orderBy("created_at","desc"));
+  const snap = await getDocs(q);
+  body.innerHTML = "";
+
+  snap.forEach(d => {
+    const data = d.data();
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${data.title}</td>
+      <td>${data.file_type}</td>
+      <td>${data.date_string}</td>
+      <td>
+        <button class="btn btn-edit"
+          onclick="location.href='post-docs.html?id=${d.id}'">Sửa</button>
+        <button class="btn btn-del">Xóa</button>
+      </td>
+    `;
+
+    tr.querySelector(".btn-del").onclick = async () => {
+      if (!confirm("Xóa tài liệu?")) return;
+      await deleteDoc(doc(db,"documents",d.id));
+      loadDocs();
+    };
+
+    body.appendChild(tr);
+  });
+}
+
+loadDocs();
+
+ // ⬅ Quay lại dashboard
+  document.getElementById("btnBack").onclick = () => {
+    location.replace("dashboard.html");
+  };
+</script>
+
+</body>
+</html>

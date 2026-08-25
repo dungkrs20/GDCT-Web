@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thêm / Sửa Nhân vật – Sự kiện</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background: #0d47a1;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-email {
+      margin-right: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn-save {
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .btn-logout {
+      background: #fff;
+      color: #0d47a1;
+    }
+
+    .btn-back {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 24px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 16px;
+      display: block;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .thumb {
+      margin-top: 12px;
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #eee;
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+     #editor {
+    height: 400px;
+    background: #fff;
+    }
+    .ql-editor img {
+      max-width: 100%;
+      display: block;
+      margin: 12px auto;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <h1 id="pageTitle">➕ Thêm Nhân vật / Sự kiện</h1>
+  <div class="header-right">
+    <span id="userEmail" class="user-email"></span>
+    <button class="btn btn-logout" id="btnLogout">Đăng xuất</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <label>Loại</label>
+  <select id="type">
+    <option value="character">Nhân vật</option>
+    <option value="event">Sự kiện</option>
+  </select>
+
+  <label>Tên nhân vật / sự kiện</label>
+  <input id="name" placeholder="Nhập tên nhân vật / sự kiện" />
+
+  <label id="labelExtra">Chức danh / Thời gian</label>
+  <input id="extra" placeholder="VD: Tổng Bí thư / 1930–1945" />
+
+  <label>Mô tả *</label>
+  <div id="editor"></div>
+
+
+  <label>Ảnh tiêu đề</label>
+  <input type="file" id="imageInput" accept="image/*" />
+  <img id="preview" class="thumb" style="display:none" />
+
+  <div class="actions">
+    <button class="btn btn-back" id="btnBack">⬅ Quay lại</button>
+    <button class="btn btn-save" id="btnSave">💾 Lưu</button>
+  </div>
+</div>
+
+<!-- ===== SCRIPT ===== -->
+<script type="module">
+  import { requireAuth, logout } from "./js/auth.js";
+  import { auth, db } from "./js/firebase.js";
+  import { onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  import {
+    collection,
+    addDoc,
+    updateDoc,
+    doc,
+    getDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  requireAuth();
+
+  const userEmail = document.getElementById("userEmail");
+  onAuthStateChanged(auth, u => userEmail.textContent = u ? u.email : "");
+
+  document.getElementById("btnLogout").onclick = logout;
+  document.getElementById("btnBack").onclick = () =>
+    location.replace("manage-characters-events.html");
+
+  const params = new URLSearchParams(location.search);
+  const editId = params.get("id");
+
+  const typeEl = document.getElementById("type");
+  const nameEl = document.getElementById("name");
+  const extraEl = document.getElementById("extra");
+  const imageInput = document.getElementById("imageInput");
+  const preview = document.getElementById("preview");
+
+  let imageUrl = null;
+  let imagePublicId = null;
+  let contentImagePublicIds = [];
+
+  const quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold','italic','underline'],
+        [{ header: [1,2,false] }],
+        [{ align: [] }],
+        [{ list: 'ordered' },{ list: 'bullet' }],
+        ['image'],
+        ['clean']
+      ]
+    }
+  });
+
+// tắt spellcheck
+quill.root.setAttribute("spellcheck", "false");
+
+
+  // ===== IMAGE HANDLER =====
+    quill.getModule('toolbar').addHandler('image', async () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.click();
+
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        const img = await uploadImage(file);
+
+        const range = quill.getSelection(true);
+        quill.insertEmbed(range.index, 'image', img.url);
+        quill.setSelection(range.index + 1);
+
+        if (!contentImagePublicIds.includes(img.public_id)) {
+          contentImagePublicIds.push(img.public_id);
+        }
+      };
+    });
+
+
+
+  typeEl.onchange = () => {
+    document.getElementById("labelExtra").textContent =
+      typeEl.value === "character" ? "Chức danh" : "Thời gian";
+  };
+
+  imageInput.onchange = async () => {
+    const file = imageInput.files[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", "character-event");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dgqcsis3c/image/upload",
+      { method: "POST", body: fd }
+    );
+    const data = await res.json();
+    imageUrl = data.secure_url;
+    imagePublicId = data.public_id;
+
+    preview.src = imageUrl;
+    preview.style.display = "block";
+  };
+
+  if (editId) {
+    document.getElementById("pageTitle").textContent = "✏️ Sửa Nhân vật / Sự kiện";
+    const snap = await getDoc(doc(db, "characters_events", editId));
+    if (snap.exists()) {
+      const d = snap.data();
+      typeEl.value = d.type;
+      nameEl.value = d.name || "";
+      extraEl.value = d.type === "character" ? d.title : d.time;
+      quill.root.innerHTML = d.description_html || "";
+      contentImagePublicIds = d.content_image_public_ids || [];
+      imageUrl = d.image_url;
+      imagePublicId = d.image_public_id;
+
+      if (imageUrl) {
+        preview.src = imageUrl;
+        preview.style.display = "block";
+      }
+    }
+  }
+
+  document.getElementById("btnSave").onclick = async () => {
+    
+
+  const rawHtml = quill.root.innerHTML.trim();
+  const plainText = quill.getText().trim();
+
+  if (!nameEl.value.trim()) {
+    alert("❌ Vui lòng nhập tên nhân vật / sự kiện");
+    nameEl.focus();
+    return;
+  }
+  
+   if (!plainText || rawHtml === "<p><br></p>") {
+    alert("❌ Mô tả không được để trống");
+    return;
+  }
+  // ===== VALIDATE ẢNH TIÊU ĐỀ (CHỈ KHI TẠO MỚI) =====
+  if (!editId && !imageUrl) {
+    alert("❌ Vui lòng chọn ảnh tiêu đề");
+    imageInput.focus();
+    return;
+  }
+
+
+  const data = {
+    type: typeEl.value,
+    name: nameEl.value,
+    image_url: imageUrl || null,
+    image_public_id: imagePublicId || null,
+
+    // 🔥 QUILL
+    description_html: rawHtml,
+    content_image_public_ids: contentImagePublicIds,
+
+    updated_at: serverTimestamp()
+  };
+
+  if (typeEl.value === "character") {
+    data.title = extraEl.value;
+  } else {
+    data.time = extraEl.value;
+  }
+
+  if (editId) {
+    await updateDoc(doc(db, "characters_events", editId), data);
+  } else {
+    data.created_at = serverTimestamp();
+    await addDoc(collection(db, "characters_events"), data);
+  }
+
+  location.replace("manage-characters-events.html");
+};
+
+
+  async function uploadImage(file) {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", "character-event");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dgqcsis3c/image/upload",
+      { method: "POST", body: fd }
+    );
+
+    const json = await res.json();
+    return {
+      url: json.secure_url,
+      public_id: json.public_id
+    };
+  }
+
+  history.pushState({ page: "post-character-event" }, "", location.href);
+
+  window.addEventListener("popstate", () => {
+    location.replace("manage-characters-events.html");
+  });
+
+
+</script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý bài viết – Chính trị số</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: #0d47a1;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-email {
+      margin-right: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #ffffff;        
+      opacity: 1;            
+    }
+
+
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn-add {
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .btn-add:hover {
+      background: #125ea8;
+    }
+
+    .btn-logout {
+      background: #fff;
+      color: #0d47a1;
+    }
+
+    /* ===== CONTENT ===== */
+    .container {
+      padding: 24px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    th, td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f3f7;
+      font-weight: 600;
+      color: #444;
+      font-size: 16px;
+    }
+
+    tr:hover td {
+      background: #f9fbfd;
+    }
+
+    .actions button {
+      margin-right: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .btn-edit {
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .btn-delete {
+      background: #d32f2f;
+      color: #fff;
+    }
+
+    .news-thumb {
+      width: 90px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: #eee;
+    }
+
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #777;
+    }
+
+    #btnBack {
+    background: #e0e0e0;
+    color: #333;
+    }
+
+    #btnBack:hover {
+      background: #d5d5d5;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <h1>📰 Quản lý bài viết</h1>
+  <div class="header-right">
+    <span id="userEmail" class="user-email"></span>
+    <button class="btn btn-logout" id="btnLogout">Đăng xuất</button>
+  </div>
+</header>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar" style="justify-content: space-between;">
+    <button class="btn" id="btnBack">⬅ Quay lại</button>
+    <button class="btn btn-add" id="btnAdd">➕ Đăng bài viết</button>
+  </div>
+
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th width="100">Ảnh</th>
+        <th width="730">Tiêu đề</th>
+        <th width="160">Ngày đăng</th>
+        <th width="160">Hành động</th>
+      </tr>
+    </thead>
+    <tbody id="newsBody"></tbody>
+  </table>
+
+  <div class="empty" id="emptyMsg" style="display:none">
+    Chưa có bài viết nào
+  </div>
+</div>
+
+<!-- ===== SCRIPT ===== -->
+<script type="module">
+  import { requireAuth, logout } from "./js/auth.js";
+  import { auth, db } from "./js/firebase.js";
+  import { onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  import {
+    collection,
+    query,
+    orderBy,
+    getDocs,
+    deleteDoc,
+    doc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  import { getFunctions, httpsCallable }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
+  const functions = getFunctions(undefined, "us-central1");
+  const deleteCloudinaryImages =
+  httpsCallable(functions, "deleteCloudinaryImages");
+
+
+  // 🔐 Bảo vệ trang
+  requireAuth();
+
+  // 🔒 Push history giả
+  history.pushState({ page: "manage-news" }, "", location.href);
+
+  // 🔒 Chặn Back / Forward
+  window.addEventListener("popstate", () => {
+    location.replace("dashboard.html");
+  });
+
+  //Lấy ảnh từ content
+
+
+  // ===== HIỂN THỊ EMAIL ADMIN (CHUẨN) =====
+  const userEmail = document.getElementById("userEmail");
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      userEmail.textContent = user.email;
+    } else {
+      userEmail.textContent = "";
+    }
+  });
+
+  // Logout
+  document.getElementById("btnLogout").onclick = logout;
+
+  // Đăng bài mới
+  document.getElementById("btnAdd").onclick = () => {
+    location.replace("post-news.html");
+  };
+
+  const bodyEl = document.getElementById("newsBody");
+  const emptyEl = document.getElementById("emptyMsg");
+
+  async function loadNews() {
+    try {
+      const q = query(
+        collection(db, "news"),
+        orderBy("date", "desc")
+      );
+
+      const snap = await getDocs(q);
+      bodyEl.innerHTML = "";
+
+      if (snap.empty) {
+        emptyEl.style.display = "block";
+        return;
+      }
+
+      emptyEl.style.display = "none";
+
+      snap.forEach(docSnap => {
+      const d = docSnap.data();
+
+      // ===== FORMAT DATE =====
+      let dateText = "";
+      if (d.date && d.date.toDate) {
+        const dt = d.date.toDate();
+        dateText = dt.toLocaleDateString("vi-VN") + " " +
+                  dt.toLocaleTimeString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false
+                  });
+      }
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>
+          ${
+            d.image_url
+              ? `<img src="${d.image_url}" class="news-thumb">`
+              : ""
+          }
+        </td>
+        <td>${d.title || ""}</td>
+        <td>${dateText}</td>
+        <td class="actions">
+          <button class="btn btn-edit">Sửa</button>
+          <button class="btn btn-delete">Xóa</button>
+        </td>
+      `;
+
+      tr.querySelector(".btn-edit").onclick = () => {
+        location.replace(`post-news.html?id=${docSnap.id}`);
+      };
+
+      tr.querySelector(".btn-delete").onclick = async () => {
+        if (!confirm("Xóa bài viết này?")) return;
+
+        try {
+          const publicIds = [];
+
+          // 1️⃣ Ảnh tiêu đề
+          if (d.image_public_id) {
+            publicIds.push(d.image_public_id);
+          }
+
+          // 2️⃣ Ảnh trong nội dung
+          // ✅ DÙNG DATA ĐÃ LƯU
+          if (Array.isArray(d.content_image_public_ids)) {
+            publicIds.push(...d.content_image_public_ids);
+          }
+
+          // 3️⃣ XÓA CLOUDINARY (NẾU CÓ)
+          if (publicIds.length > 0) {
+            try {
+              await deleteCloudinaryImages({
+                public_ids: publicIds
+              });
+            } catch (cloudinaryError) {
+              console.error("Lỗi xóa Cloudinary:", cloudinaryError);
+            }
+          }
+
+          // 4️⃣ XÓA FIRESTORE
+          await deleteDoc(doc(db, "news", docSnap.id));
+
+          
+
+          loadNews();
+
+        } catch (err) {
+          console.error(err);
+          alert("❌ Không thể xóa bài viết");
+        }
+      };
+
+
+      bodyEl.appendChild(tr);
+    });
+
+
+    } catch (e) {
+      console.error(e);
+      emptyEl.style.display = "block";
+      emptyEl.textContent = "Không thể tải dữ liệu bài viết";
+    }
+  }
+
+  loadNews();
+
+    // ⬅ Quay lại dashboard
+  document.getElementById("btnBack").onclick = () => {
+    location.replace("dashboard.html");
+  };
+
+</script>
+
+</body>
+</html>

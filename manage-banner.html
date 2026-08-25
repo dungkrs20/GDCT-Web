@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Banner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #f4f6f8;
+    }
+
+    header {
+      background: #0d47a1;
+      color: #fff;
+      padding: 16px 24px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-add { background:#1976d2;color:#fff }
+    .btn-back { background:#e0e0e0 }
+
+    table {
+      width: 100%;
+      background: #fff;
+      border-collapse: collapse;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f3f7;
+      font-weight: 600;
+    }
+
+    img {
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+
+    .status {
+      font-weight: 600;
+    }
+
+    .upcoming { color:#f9a825 }
+    .active { color:#2e7d32 }
+    .ended { color:#d32f2f }
+
+    .actions button {
+      margin-right: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .btn-edit { background:#1976d2;color:#fff }
+    .btn-delete { background:#d32f2f;color:#fff }
+  </style>
+</head>
+
+<body>
+
+<header>🖼️ Quản lý banner</header>
+
+<div class="container">
+
+  <div class="toolbar">
+    <button class="btn-back" onclick="location.replace('dashboard.html')">
+      ⬅ Quay lại
+    </button>
+    <button class="btn-add" onclick="location.replace('post-banner.html')">
+      ➕ Thêm banner
+    </button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ảnh</th>
+        <th>Tiêu đề</th>
+        <th>Loại</th>
+        <th>Thời gian</th>
+        <th>Trạng thái</th>
+        <th>Thứ tự</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody id="bannerBody"></tbody>
+  </table>
+
+</div>
+
+<script type="module">
+  import { requireAuth } from "./js/auth.js";
+  import { db } from "./js/firebase.js";
+  import {
+    collection,
+    getDocs,
+    deleteDoc,
+    doc,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  requireAuth();
+
+  const bodyEl = document.getElementById("bannerBody");
+
+  function formatTime(ts) {
+    if (!ts) return "";
+    return ts.toDate().toLocaleString("vi-VN");
+  }
+
+  function getStatus(start, end) {
+    const now = new Date();
+    const s = start.toDate();
+    const e = end.toDate();
+
+    if (now < s) return { text:"Sắp diễn ra", cls:"upcoming" };
+    if (now > e) return { text:"Đã kết thúc", cls:"ended" };
+    return { text:"Đang diễn ra", cls:"active" };
+  }
+
+  async function loadBanners() {
+    const q = query(
+      collection(db, "banners"),
+      orderBy("order", "asc")
+    );
+
+    const snap = await getDocs(q);
+    bodyEl.innerHTML = "";
+
+    snap.forEach(d => {
+      const b = d.data();
+      const st = getStatus(b.start_time, b.end_time);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><img src="${b.image_url}"></td>
+        <td>${b.title}</td>
+        <td>${b.type}</td>
+        <td>${formatTime(b.start_time)}<br>${formatTime(b.end_time)}</td>
+        <td class="status ${st.cls}">${st.text}</td>
+        <td>${b.order}</td>
+        <td class="actions">
+          <button class="btn-edit" onclick="editBanner('${d.id}')">Sửa</button>
+          <button class="btn-delete" onclick="deleteBanner('${d.id}')">Xoá</button>
+        </td>
+      `;
+      bodyEl.appendChild(tr);
+    });
+  }
+
+  window.editBanner = id => {
+    location.replace(`post-banner.html?id=${id}`);
+  };
+
+  window.deleteBanner = async id => {
+    if (!confirm("Xoá banner này?")) return;
+    await deleteDoc(doc(db, "banners", id));
+    loadBanners();
+  };
+
+  loadBanners();
+</script>
+
+</body>
+</html>

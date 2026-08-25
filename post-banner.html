@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Thêm / Sửa Banner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #f4f6f8;
+    }
+
+    header {
+      background: #0d47a1;
+      color: #fff;
+      padding: 16px 24px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .row {
+      display: flex;
+      gap: 40px;
+    }
+
+    .row > div { flex: 1 }
+
+    img {
+      margin-top: 12px;
+      max-width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn {
+    padding:10px 14px; 
+    border:none; 
+    border-radius:6px;
+    cursor:pointer; 
+    font-weight:600
+     }
+    .btn-save { background:#1976d2;color:#fff }
+    .btn-back { background:#eee }
+    .toolbar {
+      display:flex; justify-content:space-between; margin-bottom:20px
+      }
+  </style>
+</head>
+
+<body>
+
+<header>🖼️ Thêm / Sửa Banner</header>
+
+<div class="container">
+  <div class="toolbar">
+      <button class="btn btn-back" id="btnBack">⬅ Quay lại</button>
+  </div>
+  <div class="card">
+
+    <label>Tiêu đề banner</label>
+    <input id="title">
+
+    <label>Ảnh banner</label>
+    <input type="file" id="imageFile" accept="image/*">
+    <img id="preview" style="display:none">
+
+    <label>Loại banner</label>
+    <select id="type">
+      <option value="news">Tin tức</option>
+      <option value="competition">Cuộc thi</option>
+      <option value="link">Liên kết ngoài</option>
+    </select>
+
+    <label>Liên kết nội dung</label>
+
+      <div style="position:relative">
+        <input
+          id="refSearch"
+          placeholder="Gõ để tìm tin tức hoặc cuộc thi…"
+          autocomplete="off"
+        >
+
+        <input type="hidden" id="refId">
+
+        <div id="suggestList" style="
+          position:absolute;
+          top:100%;
+          left:0;
+          right:0;
+          z-index:1000;
+          background:#fff;
+          border:1px solid #ccc;
+          border-radius:6px;
+          display:none;
+          max-height:220px;
+          overflow:auto;
+        "></div>
+      </div>
+
+
+    <div class="row">
+      <div>
+        <label>Bắt đầu hiển thị</label>
+        <input type="datetime-local" id="startTime">
+      </div>
+      <div>
+        <label>Kết thúc hiển thị</label>
+        <input type="datetime-local" id="endTime">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Thứ tự hiển thị</label>
+        <input type="number" id="order" min="1">
+      </div>
+      <div>
+        <label>Trạng thái</label>
+        <select id="enabled">
+          <option value="true">Bật</option>
+          <option value="false">Tắt</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-save" id="btnSave">💾 Lưu banner</button>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth } from "./js/auth.js";
+  import { db } from "./js/firebase.js";
+  import {
+    collection,
+    addDoc,
+    doc,
+    getDoc,
+    updateDoc,
+    serverTimestamp,
+    query,
+    where,
+    orderBy,
+    limit,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+
+  requireAuth();
+
+  // ===== CLOUDINARY =====
+  const CLOUD_NAME = "dgqcsis3c";
+  const UPLOAD_PRESET = "competition_image";
+
+  const params = new URLSearchParams(location.search);
+  const bannerId = params.get("id");
+
+  const titleEl = document.getElementById("title");
+  const typeEl = document.getElementById("type");
+  const refSearchEl = document.getElementById("refSearch");
+  const refIdEl = document.getElementById("refId");
+  const suggestList = document.getElementById("suggestList");
+  const startEl = document.getElementById("startTime");
+  const endEl = document.getElementById("endTime");
+  const orderEl = document.getElementById("order");
+  const enabledEl = document.getElementById("enabled");
+  const fileEl = document.getElementById("imageFile");
+  const preview = document.getElementById("preview");
+
+  let imageUrl = null;
+
+  fileEl.onchange = () => {
+    const f = fileEl.files[0];
+    if (!f) return;
+    preview.src = URL.createObjectURL(f);
+    preview.style.display = "block";
+  };
+
+     /* ===== BACK ===== */
+    history.pushState({}, "", location.href);
+    window.addEventListener("popstate", () => {
+      location.replace("manage-banner.html");
+    });
+    document.getElementById("btnBack").onclick =
+      () => location.replace("manage-banner.html");
+
+
+  // Hàm search theo type
+
+  async function searchRef(keyword) {
+    const type = typeEl.value;
+    if (type === "link") {
+    suggestList.style.display = "none";
+    return;
+    }
+
+    if (!keyword) {
+      suggestList.style.display = "none";
+      return;
+    }
+
+    let col = null;
+
+    if (type === "news") col = "news";
+    if (type === "competition") col = "competitions";
+    if (!col) return;
+
+    const q = query(
+      collection(db, col),
+      orderBy("title"),
+      limit(10)
+    );
+
+    const snap = await getDocs(q);
+
+    suggestList.innerHTML = "";
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+
+      if (!d.title?.toLowerCase().includes(keyword.toLowerCase())) return;
+
+      const div = document.createElement("div");
+      div.style.padding = "10px";
+      div.style.cursor = "pointer";
+      div.style.borderBottom = "1px solid #eee";
+
+      div.innerHTML = `
+        <b>${d.title}</b><br>
+        <small style="color:#666">ID: ${docSnap.id}</small>
+      `;
+
+      div.onclick = () => {
+        refSearchEl.value = d.title;
+        refIdEl.value = docSnap.id;
+        suggestList.style.display = "none";
+      };
+
+      suggestList.appendChild(div);
+    });
+
+    suggestList.style.display =
+      suggestList.innerHTML ? "block" : "none";
+  }
+
+
+  // Khi đổi loại banner → reset
+  typeEl.onchange = () => {
+  refSearchEl.value = "";
+  refIdEl.value = "";
+  suggestList.style.display = "none";
+
+  if (typeEl.value === "link") {
+    refSearchEl.placeholder = "Nhập link ngoài (VD: https://...)";
+  } else {
+    refSearchEl.placeholder = "Gõ để tìm tin tức hoặc cuộc thi…";
+  }
+};
+
+
+  // ẨN suggestList KHI CLICK RA NGOÀI
+
+  document.addEventListener("click", e => {
+    if (!e.target.closest("#refSearch") &&
+        !e.target.closest("#suggestList")) {
+      suggestList.style.display = "none";
+    }
+  });
+
+
+  // Gắn sự kiện gõ chữ
+  let searchTimer = null;
+
+  refSearchEl.addEventListener("input", e => {
+    clearTimeout(searchTimer);
+    const keyword = e.target.value.trim();
+
+    searchTimer = setTimeout(() => {
+      searchRef(keyword);
+    }, 300);
+  });
+
+
+  async function uploadImage(file) {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", UPLOAD_PRESET);
+    fd.append("folder", "banners");
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      { method:"POST", body:fd }
+    );
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  async function loadEdit() {
+    if (!bannerId) return;
+
+    const snap = await getDoc(doc(db,"banners",bannerId));
+    if (!snap.exists()) return;
+
+    const d = snap.data();
+
+    titleEl.value = d.title;
+    typeEl.value = d.type;
+    if (d.type === "link") {
+      refSearchEl.value = d.ref_id || "";
+      refIdEl.value = "";
+      refSearchEl.placeholder = "Nhập link ngoài (VD: https://...)";
+    } else {
+      refIdEl.value = d.ref_id || "";
+      refSearchEl.value = d.ref_title || "";
+    }
+
+    orderEl.value = d.order;
+    enabledEl.value = d.enabled ? "true":"false";
+
+    startEl.value = d.start_time.toDate().toISOString().slice(0,16);
+    endEl.value = d.end_time.toDate().toISOString().slice(0,16);
+
+    imageUrl = d.image_url;
+    preview.src = imageUrl;
+    preview.style.display = "block";
+
+    if (d.type === "link") {
+      refSearchEl.placeholder = "Nhập link ngoài (VD: https://...)";
+    }
+  }
+
+
+  document.getElementById("btnSave").onclick = async () => {
+    if (!titleEl.value || !startEl.value || !endEl.value) {
+      alert("❌ Chưa nhập đủ thông tin");
+      return;
+    }
+
+    if (fileEl.files.length) {
+      imageUrl = await uploadImage(fileEl.files[0]);
+    }
+
+    if (!imageUrl) {
+      alert("❌ Chưa có ảnh banner");
+      return;
+    }
+
+    const data = {
+      title: titleEl.value.trim(),
+      image_url: imageUrl,
+      type: typeEl.value,
+
+     ref_id:
+      typeEl.value === "link"
+        ? refSearchEl.value.trim()
+        : (refIdEl.value || null),
+
+      ref_title: refSearchEl.value || null,
+      start_time: new Date(startEl.value),
+      end_time: new Date(endEl.value),
+      order: Number(orderEl.value) || 0,
+      enabled: enabledEl.value === "true",
+      updated_at: serverTimestamp()
+    };
+
+
+    if (bannerId) {
+      await updateDoc(doc(db,"banners",bannerId), data);
+    } else {
+      await addDoc(collection(db,"banners"), {
+        ...data,
+        created_at: serverTimestamp()
+      });
+    }
+
+    location.replace("manage-banner.html");
+  };
+
+  loadEdit();
+</script>
+
+</body>
+</html>

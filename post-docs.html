@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Thêm / Sửa tài liệu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { margin:0; font-family:Arial; background:#f4f6f8 }
+.container {
+  max-width:900px; margin:40px auto; background:#fff;
+  padding:30px 36px; border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,.1)
+}
+.toolbar {
+  display:flex; justify-content:space-between; margin-bottom:20px
+}
+.btn {
+  padding:10px 14px; border:none; border-radius:6px;
+  cursor:pointer; font-weight:600
+}
+.btn-back { background:#eee }
+.btn-save { background:#1976d2; color:#fff }
+.form-group { margin-bottom:18px }
+label { font-weight:bold; display:block; margin-bottom:6px }
+input, select {
+  width:100%; padding:10px; border-radius:6px; border:1px solid #ccc
+}
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.55); z-index:3000;
+  align-items:center; justify-content:center
+}
+.overlay-box {
+  background:#fff; padding:24px 30px; border-radius:10px
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn btn-back" id="btnBack">⬅ Quay lại</button>
+    <button class="btn btn-save" id="btnSave">💾 Lưu tài liệu</button>
+  </div>
+
+  <h2 id="pageTitle">📄 Thêm tài liệu mới</h2>
+
+  <div class="form-group">
+    <label>Tiêu đề *</label>
+    <input id="title">
+  </div>
+
+  <div class="form-group">
+    <label>Danh mục *</label>
+    <select id="category">
+      <option value="">-- Chọn danh mục --</option>
+      <option>Chỉ thị – Nghị quyết</option>
+      <option>Giáo dục chính trị</option>
+      <option>Huấn luyện</option>
+      <option>Kế hoạch</option>
+      <option>Pháp luật</option>
+      <option>Sách tham khảo</option>
+      <option>Tài liệu học tập</option>
+      <option>Tài liệu nội bộ</option>
+      <option>Thông báo - Kết luận</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Chọn file (PDF, DOC, PPT, XLS) *</label>
+    <input type="file" id="fileInput"
+      accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx">
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box">Đang xử lý…</div>
+</div>
+
+<script type="module">
+import { requireAuth } from "./js/auth.js";
+import { db } from "./js/firebase.js";
+import {
+  collection, addDoc, doc, getDoc, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+requireAuth();
+
+/* ===== BACK ===== */
+history.pushState({}, "", location.href);
+window.addEventListener("popstate", () => {
+  location.replace("dashboard.html");
+});
+document.getElementById("btnBack").onclick =
+  () => location.replace("dashboard.html");
+
+/* ===== CLOUDINARY ===== */
+const CLOUD_NAME = "dgqcsis3c";
+const UPLOAD_PRESET = "document";
+
+/* ===== ELEMENT ===== */
+const titleEl = document.getElementById("title");
+const catEl = document.getElementById("category");
+const fileEl = document.getElementById("fileInput");
+const overlay = document.getElementById("overlay");
+const pageTitle = document.getElementById("pageTitle");
+
+const params = new URLSearchParams(location.search);
+const editId = params.get("id");
+
+let oldFileUrl = null;
+let oldFileName = null;
+let oldFileType = null;
+
+/* ===== FILE VALIDATE ===== */
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+];
+
+fileEl.onchange = () => {
+  const f = fileEl.files[0];
+  if (!f) return;
+  if (!ALLOWED_TYPES.includes(f.type)) {
+    alert("❌ Loại file không được hỗ trợ");
+    fileEl.value = "";
+  }
+};
+
+/* ===== EDIT MODE ===== */
+if (editId) {
+  pageTitle.textContent = "✏️ Sửa tài liệu";
+  const snap = await getDoc(doc(db,"documents",editId));
+  if (snap.exists()) {
+    const d = snap.data();
+    titleEl.value = d.title;
+    catEl.value = d.category;
+    oldFileUrl = d.file_url;
+    oldFileName = d.file_name;
+    oldFileType = d.file_type;
+  }
+}
+
+/* ===== UPLOAD ===== */
+async function uploadFile(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", UPLOAD_PRESET);
+  fd.append("folder", "documents"); // 👈 THƯ MỤC
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/raw/upload`,
+    { method:"POST", body: fd }
+  );
+  return await res.json();
+}
+
+function getFileExtension(filename) {
+  if (!filename) return "";
+  return filename.split(".").pop().toLowerCase();
+}
+
+function formatDateTimeVN(date = new Date()) {
+  const pad = (n) => n.toString().padStart(2, "0");
+
+  const d = pad(date.getDate());
+  const m = pad(date.getMonth() + 1);
+  const y = date.getFullYear();
+
+  const h = pad(date.getHours());
+  const min = pad(date.getMinutes());
+  const s = pad(date.getSeconds());
+
+  return `${d}/${m}/${y} ${h}:${min}:${s}`;
+}
+
+
+
+/* ===== SAVE ===== */
+document.getElementById("btnSave").onclick = async () => {
+  if (!titleEl.value.trim()) return alert("Thiếu tiêu đề");
+  if (!catEl.value) return alert("Chưa chọn danh mục");
+
+  const hasNewFile = fileEl.files.length > 0;
+  if (!editId && !hasNewFile)
+    return alert("Chưa chọn file");
+
+  overlay.style.display = "flex";
+
+  try {
+    let fileUrl = oldFileUrl;
+    let fileName = oldFileName;
+    let fileExt = oldFileType; //  giờ là extension (pdf, docx…)
+
+    // ===== UPLOAD FILE MỚI =====
+    if (hasNewFile) {
+      const f = fileEl.files[0];
+      const up = await uploadFile(f);
+
+      fileUrl  = up.secure_url;
+      fileName = f.name;
+      fileExt  = getFileExtension(f.name); //  PHÁT HIỆN LOẠI FILE
+    }
+
+    // ===== DATA LƯU FIRESTORE =====
+    const data = {
+      title: titleEl.value.trim(),
+      category: catEl.value,
+
+      file_url: fileUrl,
+      file_name: fileName,
+      file_type: fileExt,               //  pdf / doc / pptx / xlsx
+      date_string: formatDateTimeVN(),  //  dd/mm/yyyy hh:mm:ss
+    };
+
+    if (editId) {
+      await updateDoc(doc(db, "documents", editId), data);
+    } else {
+      await addDoc(collection(db, "documents"), {
+        ...data,
+        created_at: serverTimestamp()
+      });
+    }
+
+    location.replace("manage-docs.html");
+
+  } catch (e) {
+    console.error(e);
+    alert("❌ Lỗi khi lưu tài liệu");
+    overlay.style.display = "none";
+  }
+};
+
+</script>
+
+</body>
+</html>

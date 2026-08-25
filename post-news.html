@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đăng / Sửa bài viết</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; margin-bottom: 30px; }
+    .form-group { margin-bottom: 20px; }
+    label { font-weight: bold; display: block; margin-bottom: 8px; }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    input[readonly] { background: #f1f1f1; }
+    .ql-editor img {
+      max-height: 500px;
+      display: block;
+      margin: 12px auto;
+    }
+
+    #editor { height: 600px; background: #fff; }
+    .btn-group { display: flex; gap: 12px; margin-top: 25px; }
+    button {
+      flex: 1;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-preview { background: #555; color: #fff; }
+    .btn-submit { background: #1976d2; color: #fff; }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay-box {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+    }
+
+    /* ===== PREVIEW ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #fff;
+      max-width: 420px;
+      width: 90%;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .preview-scroll {
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .preview-cover {
+      width: 100%;
+      display: block;
+    }
+    .preview-body {
+      padding: 16px;
+    }
+    .preview-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .preview-date {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 14px;
+    }
+    .preview-content img {
+      max-width: 100%;
+      display: block;
+      margin: 12px 0;
+    }
+    .preview-actions {
+      padding: 12px;
+      border-top: 1px solid #eee;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2 id="pageTitle">📝 Đăng bản tin mới</h2>
+
+  <div class="form-group">
+    <label>Tiêu đề *</label>
+    <input id="title" type="text">
+  </div>
+
+  <div class="form-group">
+    <label>Nội dung bài viết *</label>
+    <div id="editor"></div>
+  </div>
+
+  <div class="form-group">
+    <label>Ngày đăng</label>
+    <input id="date" type="text" readonly>
+  </div>
+
+  <div class="form-group">
+    <label>Ảnh tiêu đề</label>
+    <input type="file" id="imageFile" accept="image/*">
+  </div>
+
+  <div class="btn-group">
+    <button class="btn-preview" onclick="openPreview()">👁️ Xem trước</button>
+    <button class="btn-submit" id="btnSubmit">💾 Lưu bài</button>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div class="modal" id="previewModal">
+  <div class="modal-content">
+    <div class="preview-scroll">
+      <img id="pmImage" class="preview-cover" style="display:none">
+      <div class="preview-body">
+        <div class="preview-title" id="pmTitle"></div>
+        <div class="preview-date" id="pmDate"></div>
+        <div class="preview-content" id="pmContent"></div>
+      </div>
+    </div>
+    <div class="preview-actions">
+      <button onclick="closePreview()">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="loadingOverlay">
+  <div class="overlay-box">Đang xử lý…</div>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+
+<script type="module">
+
+  import { getFunctions, httpsCallable }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
+  const functions = getFunctions();
+  const deleteCloudinaryImage =
+  httpsCallable(functions, "deleteCloudinaryImage");
+
+  import { requireAuth } from "./js/auth.js";
+  import { db } from "./js/firebase.js";
+  import {
+    collection, addDoc, doc, getDoc, updateDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  let oldImageUrl = null;
+  let oldImagePublicId = null;
+  let contentImagePublicIds = [];
+
+
+  requireAuth();
+
+    // 🔒 Ép lịch sử: back luôn về manage-news
+  // 🔒 Push history giả
+  history.pushState({ page: "post-news" }, "", location.href);
+
+  // 🔒 Chặn Back / Forward
+  window.addEventListener("popstate", () => {
+    location.replace("manage-news.html");
+  });
+
+
+  /* ===== CONFIG CLOUDINARY ===== */
+  const CLOUD_NAME = "dgqcsis3c";
+  const UPLOAD_PRESET = "news_image";
+
+  const params = new URLSearchParams(location.search);
+  const editId = params.get("id");
+
+  const titleEl = document.getElementById("title");
+  const dateEl  = document.getElementById("date");
+  const imageFile = document.getElementById("imageFile");
+  const overlay = document.getElementById("loadingOverlay");
+  const pageTitle = document.getElementById("pageTitle");
+
+  /* ===== DATE ===== */
+  function getVietnamDate() {
+    return new Date(
+      new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Ho_Chi_Minh"
+      })
+    );
+  }
+
+  function updateDate() {
+    const now = getVietnamDate();
+
+    const d = now.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+
+    const t = now.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+
+    dateEl.value = `${d} ${t}`;
+  }
+
+    if (!editId) {
+      updateDate();
+      setInterval(updateDate, 5000);
+    }
+
+  /* ===== QUILL ===== */
+  const quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold','italic','underline'],
+        [{ header: [1,2,false] }],
+        [{ align: [] }],
+        [{ list: 'ordered' },{ list: 'bullet' }],
+        ['image'], // 👈 THÊM
+        ['clean']
+      ]
+    }
+  });
+
+  // ===== IMAGE HANDLER =====
+    quill.getModule('toolbar').addHandler('image', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.click();
+
+      input.onchange = () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+          const range = quill.getSelection(true);
+          quill.insertEmbed(range.index, 'image', e.target.result);
+          quill.setSelection(range.index + 1);
+        };
+        reader.readAsDataURL(file);
+      };
+    });
+
+    // ===== PASTE IMAGE SUPPORT =====
+    quill.root.addEventListener('paste', e => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.indexOf('image') === 0) {
+          e.preventDefault();
+          const file = item.getAsFile();
+
+          const reader = new FileReader();
+          reader.onload = evt => {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', evt.target.result);
+            quill.setSelection(range.index + 1);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+
+
+    // 🔕 TẮT KIỂM TRA CHÍNH TẢ TRONG QUILL
+    quill.root.setAttribute("spellcheck", "false");
+
+  /* ===== EDIT MODE ===== */
+    async function loadEditMode() {
+      if (!editId) return;
+
+      const snap = await getDoc(doc(db, "news", editId));
+      if (!snap.exists()) return;
+
+      const d = snap.data();
+
+      titleEl.value = d.title || "";
+
+      if (d.date) {
+        const date = d.date.toDate();
+        dateEl.value =
+          date.toLocaleDateString("vi-VN") + " " +
+          date.toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+          });
+      }
+
+      dateEl.readOnly = true;
+      dateEl.style.cursor = "not-allowed";
+
+      quill.root.innerHTML = d.content_html || "";
+
+      // ✅ LẤY ẢNH CŨ Ở ĐÂY
+      oldImageUrl = d.image_url || null;
+      oldImagePublicId = d.image_public_id || null;
+      contentImagePublicIds = d.content_image_public_ids || [];
+
+      pageTitle.textContent = "✏️ Sửa bài viết";
+    }
+
+    // 🔥 GỌI HÀM
+    loadEditMode();
+
+
+  /* ===== CLOUDINARY ===== */
+  async function uploadImage(file) {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", UPLOAD_PRESET);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      { method: "POST", body: fd }
+    );
+
+    const json = await res.json();
+
+    return {
+      url: json.secure_url,
+      public_id: json.public_id
+    };
+  }
+
+
+  function base64ToBlob(base64) {
+    const parts = base64.split(',');
+    const mime = parts[0].match(/:(.*?);/)[1];
+    const binary = atob(parts[1]);
+    return new Blob([Uint8Array.from(binary, c => c.charCodeAt(0))], { type: mime });
+  }
+
+  async function processHtmlImages(html) {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const imgs = div.querySelectorAll("img");
+
+    for (const img of imgs) {
+      const src = img.src;
+      if (src.startsWith("http")) continue;
+
+      let blob;
+      if (src.startsWith("data:image")) {
+        blob = base64ToBlob(src);
+      } else if (src.startsWith("blob:")) {
+        blob = await (await fetch(src)).blob();
+      }
+
+      if (blob) {
+        const imgUpload = await uploadImage(new File([blob], "img.png"));
+        img.src = imgUpload.url;
+
+        // 🔥 LƯU public_id
+        if (!contentImagePublicIds.includes(imgUpload.public_id)) {
+        contentImagePublicIds.push(imgUpload.public_id);
+}
+
+      }
+    }
+    return div.innerHTML;
+  }
+
+  /* ===== PREVIEW ===== */
+  window.openPreview = () => {
+    document.getElementById("pmTitle").textContent = titleEl.value;
+    document.getElementById("pmDate").textContent = dateEl.value;
+    document.getElementById("pmContent").innerHTML = quill.root.innerHTML;
+
+    if (imageFile.files[0]) {
+      document.getElementById("pmImage").src =
+        URL.createObjectURL(imageFile.files[0]);
+      document.getElementById("pmImage").style.display = "block";
+    } else if (oldImageUrl) {
+      document.getElementById("pmImage").src = oldImageUrl;
+      document.getElementById("pmImage").style.display = "block";
+    }
+
+    document.getElementById("previewModal").style.display = "flex";
+  };
+
+  window.closePreview = () => {
+    document.getElementById("previewModal").style.display = "none";
+  };
+
+
+  /* ===== SAVE ===== */
+    document.getElementById("btnSubmit").onclick = async () => {
+
+    /* ===== 1. VALIDATE TIÊU ĐỀ ===== */
+    const title = titleEl.value.trim();
+    if (!title) {
+        alert("❌ Vui lòng nhập tiêu đề bài viết.");
+        titleEl.focus();
+        return;
+    }
+
+    /* ===== 2. VALIDATE NỘI DUNG ===== */
+    const rawHtml = quill.root.innerHTML.trim();
+    const plainText = quill.getText().trim();
+
+    if (!plainText || rawHtml === "<p><br></p>") {
+        alert("❌ Nội dung bài viết không được để trống.");
+        return;
+    }
+
+    /* ===== 3. VALIDATE NGÀY ĐĂNG ===== */
+    if (!dateEl.value) {
+        alert("❌ Ngày đăng không hợp lệ.");
+        return;
+    }
+
+    /* ===== 4. VALIDATE ẢNH TIÊU ĐỀ ===== */
+    const hasNewImage = imageFile.files.length > 0;
+    const hasOldImage = !!oldImageUrl;
+
+    // Đăng mới → bắt buộc có ảnh
+    if (!editId && !hasNewImage) {
+        alert("❌ Vui lòng chọn ảnh tiêu đề cho bài viết.");
+        return;
+    }
+
+    // Sửa bài nhưng không có ảnh cũ và cũng không chọn ảnh mới
+    if (editId && !hasOldImage && !hasNewImage) {
+        alert("❌ Bài viết chưa có ảnh tiêu đề. Vui lòng chọn ảnh.");
+        return;
+    }
+
+    /* ===== BẮT ĐẦU XỬ LÝ ===== */
+    overlay.style.display = "flex";
+
+    try {
+        /* ===== 5. XỬ LÝ ẢNH TRONG NỘI DUNG ===== */
+        let html = await processHtmlImages(rawHtml);
+
+        /* ===== 6. XỬ LÝ ẢNH TIÊU ĐỀ ===== */
+        let imageUrl = oldImageUrl;
+        let imagePublicId = oldImagePublicId;
+
+        if (hasNewImage) {
+          // XÓA ẢNH CŨ TRƯỚC (nếu có)
+          if (oldImagePublicId) {
+            await deleteCloudinaryImage({ public_id: oldImagePublicId });
+          }
+
+          const img = await uploadImage(imageFile.files[0]);
+          imageUrl = img.url;
+          imagePublicId = img.public_id;
+        }
+
+
+
+        /* ===== 7. DATA LƯU FIRESTORE ===== */
+       let data = {
+          title,
+          content_html: html,
+          image_url: imageUrl,
+          image_public_id: imagePublicId,
+
+          // 🔥 THÊM DÒNG NÀY
+          content_image_public_ids: contentImagePublicIds
+        };
+
+
+
+        if (!editId) {
+          // đăng mới → set ngày
+          data.date = getVietnamDate();
+        }
+
+        /* ===== 8. GHI FIRESTORE ===== */
+        if (editId) {
+          // SỬA BÀI → KHÔNG ĐỤNG DATE
+          data.updated_at = serverTimestamp();
+          await updateDoc(doc(db, "news", editId), data);
+        } else {
+          // ĐĂNG MỚI
+          await addDoc(collection(db, "news"), {
+            ...data,
+            created_at: serverTimestamp()
+          });
+        }
+
+        /* ===== 9. HOÀN TẤT ===== */
+        location.href = "manage-news.html";
+
+
+    } catch (err) {
+        console.error(err);
+        alert("❌ Có lỗi xảy ra khi lưu bài viết.");
+        overlay.style.display = "none";
+    }
+    };
+
+
+
+</script>
+
+</body>
+</html>

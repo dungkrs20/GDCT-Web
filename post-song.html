@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thêm / Sửa bài hát</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background: #0d47a1;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-email {
+      margin-right: 12px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-logout {
+      background: #fff;
+      color: #0d47a1;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    audio {
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1 id="pageTitle">🎵 Thêm bài hát</h1>
+  <div class="header-right">
+    <span id="userEmail" class="user-email"></span>
+    <button class="btn btn-logout" id="btnLogout">Đăng xuất</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+
+    <label>Tên bài hát</label>
+    <input id="titleInput" placeholder="Ví dụ: Quốc ca Việt Nam">
+
+    <label>Tác giả</label>
+    <input id="authorInput" placeholder="Ví dụ: Văn Cao">
+
+    <label>File nhạc (MP3)</label>
+    <input id="audioInput" type="file" accept="audio/*">
+
+    <audio id="audioPreview" controls style="display:none"></audio>
+
+    <div class="actions">
+      <button class="btn btn-secondary" id="btnBack">⬅ Quay lại</button>
+      <button class="btn btn-primary" id="btnSave">💾 Lưu bài hát</button>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, logout } from "./js/auth.js";
+  import { auth, db } from "./js/firebase.js";
+  import { onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  import {
+    doc,
+    getDoc,
+    addDoc,
+    updateDoc,
+    collection,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  import { getFunctions, httpsCallable }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
+  requireAuth();
+
+  history.pushState({ page: "post-song" }, "", location.href);
+  window.addEventListener("popstate", () => {
+    location.replace("manage-songs.html");
+  });
+
+  const userEmail = document.getElementById("userEmail");
+  onAuthStateChanged(auth, u => userEmail.textContent = u ? u.email : "");
+  document.getElementById("btnLogout").onclick = logout;
+
+  document.getElementById("btnBack").onclick = () => {
+    location.replace("manage-songs.html");
+  };
+
+  const CLOUD_NAME = "dgqcsis3c";
+  const UPLOAD_PRESET = "songs_preset";
+
+  const deleteCloudinaryAudios =
+    httpsCallable(getFunctions(undefined, "us-central1"), "deleteCloudinaryAudios");
+
+  const params = new URLSearchParams(location.search);
+  const songId = params.get("id");
+
+  let oldAudioPublicId = null;
+  let oldAudioUrl = null;
+
+  if (songId) {
+    document.getElementById("pageTitle").textContent = "🎵 Sửa bài hát";
+
+    const snap = await getDoc(doc(db, "songs", songId));
+    if (snap.exists()) {
+      const s = snap.data();
+      titleInput.value = s.title || "";
+      authorInput.value = s.author || "";
+      oldAudioPublicId = s.audio_public_id || null;
+      oldAudioUrl = s.audio_url || null;
+
+      if (oldAudioUrl) {
+        audioPreview.src = oldAudioUrl;
+        audioPreview.style.display = "block";
+      }
+    }
+  }
+
+  audioInput.onchange = () => {
+    const f = audioInput.files[0];
+    if (f) {
+      audioPreview.src = URL.createObjectURL(f);
+      audioPreview.style.display = "block";
+    }
+  };
+
+  document.getElementById("btnSave").onclick = async () => {
+    const title = titleInput.value.trim();
+    const author = authorInput.value.trim();
+    const file = audioInput.files[0];
+
+    if (!title) {
+      alert("Thiếu tên bài hát");
+      return;
+    }
+
+    btnSave.disabled = true;
+    btnSave.textContent = "Đang lưu...";
+
+    let audioUrl = oldAudioUrl;
+    let audioPublicId = oldAudioPublicId;
+
+    if (file) {
+      if (oldAudioPublicId) {
+        await deleteCloudinaryAudios({ public_ids: [oldAudioPublicId] });
+      }
+
+      const form = new FormData();
+      form.append("file", file);
+      form.append("upload_preset", UPLOAD_PRESET);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
+        { method: "POST", body: form }
+      );
+
+      const data = await res.json();
+      audioUrl = data.secure_url;
+      audioPublicId = data.public_id;
+    }
+
+    const payload = {
+      title,
+      author,
+      audio_url: audioUrl,
+      audio_public_id: audioPublicId,
+      category: "quy_dinh",
+      updated_at: serverTimestamp()
+    };
+
+    if (songId) {
+      await updateDoc(doc(db, "songs", songId), payload);
+    } else {
+      payload.created_at = serverTimestamp();
+      await addDoc(collection(db, "songs"), payload);
+    }
+
+    location.replace("manage-songs.html");
+  };
+</script>
+
+</body>
+</html>
