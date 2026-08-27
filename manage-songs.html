@@ -2,321 +2,539 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Quản lý bài hát – Chính trị số</title>
+  <title>Quản lý Bài Hát Quy Định – Chính Trị Số Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                   Roboto, Helvetica, Arial, sans-serif;
-      background: #f4f6f8;
-      color: #333;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
     }
-
-    /* ===== HEADER ===== */
-    header {
-      background: #0d47a1;
-      color: #fff;
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-    }
-
-    .user-email {
-      margin-right: 12px;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .btn {
-      padding: 8px 14px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .btn-add {
-      background: #1976d2;
-      color: #fff;
-    }
-
-    .btn-add:hover {
-      background: #125ea8;
-    }
-
-    .btn-logout {
-      background: #fff;
-      color: #0d47a1;
-    }
-
-    /* ===== CONTENT ===== */
-    .container {
-      padding: 24px;
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    th, td {
-      padding: 14px 12px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    th {
-      background: #f0f3f7;
-      font-weight: 600;
-      font-size: 16px;
-    }
-
-    tr:hover td {
-      background: #f9fbfd;
-    }
-
-    .actions button {
-      margin-right: 6px;
-      padding: 6px 10px;
-      font-size: 12px;
-    }
-
-    .btn-edit {
-      background: #1976d2;
-      color: #fff;
-    }
-
-    .btn-delete {
-      background: #d32f2f;
-      color: #fff;
-    }
-
     audio {
-      width: 220px;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 40px;
-      color: #777;
-    }
-
-    #btnBack {
-      background: #e0e0e0;
-      color: #333;
-    }
-
-    #btnBack:hover {
-      background: #d5d5d5;
+      height: 36px;
+      outline: none;
     }
   </style>
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-<!-- ===== HEADER ===== -->
-<header>
-  <h1>🎵 Quản lý bài hát quy định</h1>
-  <div class="header-right">
-    <span id="userEmail" class="user-email"></span>
-    <button class="btn btn-logout" id="btnLogout">Đăng xuất</button>
+  <!-- ===== TOP HEADER ===== -->
+  <header class="sticky top-0 z-30 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <div class="flex items-center space-x-3">
+          <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none" aria-label="Mở menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          
+          <a href="dashboard.html" class="flex items-center space-x-3 group">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-bold text-lg">
+              CS
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-base tracking-tight text-white group-hover:text-blue-400 transition-colors">CHÍNH TRỊ SỐ</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">Admin CMS</span>
+              </div>
+              <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Cổng thông tin & Quản trị nội dung tập trung</p>
+            </div>
+          </a>
+        </div>
+
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <div class="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-slate-800/80 rounded-lg border border-slate-700/60 text-xs text-slate-300">
+            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="liveClock" class="font-mono font-medium">--:--:--</span>
+          </div>
+
+          <div class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Hệ thống trực tuyến</span>
+          </div>
+
+          <div class="flex items-center space-x-2.5 pl-2 border-l border-slate-700/70">
+            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-200 text-xs font-semibold uppercase" id="userAvatar">
+              AD
+            </div>
+            <div class="hidden lg:block text-left text-xs">
+              <p class="font-medium text-slate-200 truncate max-w-[150px]" id="userEmail">Đang kết nối...</p>
+              <p class="text-[10px] text-slate-400">Quản trị viên</p>
+            </div>
+            <button id="btnLogout" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-rose-600 border border-slate-700 hover:border-rose-500 rounded-lg transition-all shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span class="hidden sm:inline">Đăng xuất</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN WRAPPER ===== -->
+  <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6">
+
+    <!-- ===== SIDEBAR NAVIGATION ===== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 shadow-xl transition-transform duration-300 transform -translate-x-full lg:translate-x-0 lg:static lg:w-60 lg:shadow-none lg:border lg:rounded-2xl lg:bg-white lg:self-start lg:shrink-0">
+      <div class="h-full flex flex-col p-4">
+        
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 lg:hidden">
+          <span class="font-bold text-slate-800 text-sm">Danh Mục Quản Trị</span>
+          <button id="closeSidebarBtn" class="p-1 rounded-md text-slate-500 hover:bg-slate-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Trung tâm điều hành</p>
+          <nav class="space-y-1">
+            <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span>Trang Tổng Quan</span>
+            </a>
+          </nav>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Quản lý nội dung</p>
+          <nav class="space-y-1">
+            <a href="manage-news.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📰</span>
+                <span>Bài viết tin tức</span>
+              </div>
+              <span id="sideCountNews" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-banner.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📣</span>
+                <span>Banner sự kiện</span>
+              </div>
+              <span id="sideCountBanners" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-docs.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📚</span>
+                <span>Văn bản & Tài liệu</span>
+              </div>
+              <span id="sideCountDocs" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-competition.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">🏆</span>
+                <span>Cuộc thi trực tuyến</span>
+              </div>
+              <span id="sideCountCompetitions" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-songs.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-rose-50 text-rose-800 font-semibold text-sm border border-rose-200/70 shadow-xs">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">🎧</span>
+                <span>Bài hát quy định</span>
+              </div>
+              <span id="sideCountSongs" class="text-[11px] px-1.5 py-0.5 rounded-full bg-rose-200/70 text-rose-900 font-bold">—</span>
+            </a>
+
+            <a href="manage-characters-events.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📅</span>
+                <span>Nhân vật & Sự kiện</span>
+              </div>
+              <span id="sideCountChars" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+          </nav>
+        </div>
+
+        <div class="mt-auto pt-4 border-t border-slate-100 text-center">
+          <p class="text-[11px] text-slate-400 font-medium">Hệ thống Quản trị v2.4</p>
+        </div>
+
+      </div>
+    </aside>
+
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 hidden lg:hidden"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="flex-1 min-w-0 space-y-5">
+
+      <!-- Breadcrumb & Action Header -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2 text-xs text-slate-500 mb-1">
+            <a href="dashboard.html" class="hover:text-blue-600 flex items-center space-x-1">
+              <span>Tổng quan</span>
+            </a>
+            <span>/</span>
+            <span class="text-slate-800 font-semibold">Ca khúc quy định</span>
+          </div>
+          <div class="flex items-center space-x-3">
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center space-x-2">
+              <span>🎧</span>
+              <span>Quản lý Bài Hát & Âm Nhạc Quy Định</span>
+            </h1>
+            <span id="totalSongsBadge" class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-800 text-xs font-bold border border-rose-200">
+              0 bài hát
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Danh mục ca khúc truyền thống, bài hát quy định trong sinh hoạt tập thể và quân đội</p>
+        </div>
+
+        <div class="flex items-center space-x-2.5">
+          <button id="btnBack" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200/80 transition-all">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Tổng quan</span>
+          </button>
+
+          <button id="btnAdd" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-all active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Thêm bài hát mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Filters Toolbar -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="relative flex-1 max-w-md">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên bài hát hoặc tác giả..." class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all placeholder:text-slate-400" />
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button id="btnReload" class="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200 transition-colors" title="Làm mới danh sách">
+            <svg id="reloadIcon" class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="hidden sm:inline">Làm mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Table Card Container -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th class="py-3.5 px-4 w-12 text-center">#</th>
+                <th class="py-3.5 px-4">Tên bài hát</th>
+                <th class="py-3.5 px-4 w-48">Tác giả</th>
+                <th class="py-3.5 px-4 w-64">Nghe thử Audio</th>
+                <th class="py-3.5 px-4 w-36 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="songBody" class="divide-y divide-slate-100 text-sm text-slate-700">
+              <!-- Loading Skeleton -->
+              <tr>
+                <td colspan="5" class="p-8 text-center text-slate-400 text-xs">
+                  <div class="flex flex-col items-center justify-center space-y-2">
+                    <svg class="w-6 h-6 animate-spin text-rose-600" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Đang tải kho bài hát...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyMsg" class="hidden p-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-3xl mx-auto mb-3">
+            🎧
+          </div>
+          <h3 class="text-base font-bold text-slate-800">Chưa có bài hát nào</h3>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
+            Kho bài hát quy định hiện tại chưa có nội dung. Bạn có thể tải lên tệp âm thanh và lời bài hát ngay.
+          </p>
+          <a href="post-song.html" class="inline-flex items-center space-x-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl transition-colors shadow-sm">
+            <span>➕ Thêm bài hát mới</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="pt-4 text-center text-xs text-slate-400">
+        <p>© 2026 <b>Chính trị số</b> – Cổng thông tin & Hệ thống quản trị nội dung số toàn diện.</p>
+      </footer>
+
+    </main>
   </div>
-</header>
 
-<!-- ===== CONTENT ===== -->
-<div class="container">
+  <!-- SCRIPT -->
+  <script type="module">
+    import { requireAuth, logout } from "./js/auth.js";
+    import { auth, db } from "./js/firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection,
+      query,
+      orderBy,
+      getDocs,
+      deleteDoc,
+      doc,
+      getCountFromServer
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
 
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <button class="btn" id="btnBack">⬅ Quay lại</button>
-    <button class="btn btn-add" id="btnAdd">➕ Thêm bài hát</button>
-  </div>
+    const functions = getFunctions(undefined, "us-central1");
+    const deleteCloudinaryAudios = httpsCallable(functions, "deleteCloudinaryAudios");
 
-  <!-- TABLE -->
-  <table>
-    <thead>
-      <tr>
-        <th width="420">Tên bài hát</th>
-        <th width="220">Tác giả</th>
-        <th width="260">Nghe thử</th>
-        <th width="180">Hành động</th>
-      </tr>
-    </thead>
-    <tbody id="songBody"></tbody>
-  </table>
+    requireAuth();
 
-  <div class="empty" id="emptyMsg" style="display:none">
-    Chưa có bài hát nào
-  </div>
-</div>
+    history.pushState({ page: "manage-songs" }, "", location.href);
+    window.addEventListener("popstate", () => {
+      location.replace("dashboard.html");
+    });
 
-<!-- ===== SCRIPT ===== -->
-<script type="module">
-  import { requireAuth, logout } from "./js/auth.js";
-  import { auth, db } from "./js/firebase.js";
-  import { onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    const userEmailEl = document.getElementById("userEmail");
+    const userAvatarEl = document.getElementById("userAvatar");
+    const btnLogout = document.getElementById("btnLogout");
+    const liveClockEl = document.getElementById("liveClock");
+    const btnBack = document.getElementById("btnBack");
+    const btnAdd = document.getElementById("btnAdd");
+    const btnReload = document.getElementById("btnReload");
+    const reloadIcon = document.getElementById("reloadIcon");
+    const searchInput = document.getElementById("searchInput");
+    const bodyEl = document.getElementById("songBody");
+    const emptyEl = document.getElementById("emptyMsg");
+    const totalSongsBadge = document.getElementById("totalSongsBadge");
 
-  import {
-    collection,
-    query,
-    where,
-    orderBy,
-    getDocs,
-    deleteDoc,
-    doc
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    // Mobile Sidebar
+    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 
-  import { getFunctions, httpsCallable }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+    function toggleMobileSidebar(open) {
+      if (open) {
+        sidebar.classList.remove("-translate-x-full");
+        sidebarBackdrop.classList.remove("hidden");
+      } else {
+        sidebar.classList.add("-translate-x-full");
+        sidebarBackdrop.classList.add("hidden");
+      }
+    }
+    mobileMenuBtn?.addEventListener("click", () => toggleMobileSidebar(true));
+    closeSidebarBtn?.addEventListener("click", () => toggleMobileSidebar(false));
+    sidebarBackdrop?.addEventListener("click", () => toggleMobileSidebar(false));
 
-  // 🔐 Bảo vệ trang
-  requireAuth();
+    function updateClock() {
+      const now = new Date();
+      if (liveClockEl) {
+        liveClockEl.textContent = now.toLocaleTimeString("vi-VN", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-  history.pushState({ page: "manage-songs" }, "", location.href);
-  window.addEventListener("popstate", () => {
-    location.replace("dashboard.html");
-  });
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email) {
+        userEmailEl.textContent = user.email;
+        userAvatarEl.textContent = user.email.charAt(0).toUpperCase() || "AD";
+      }
+    });
 
-  // ===== USER EMAIL =====
-  const userEmail = document.getElementById("userEmail");
+    btnLogout.onclick = async () => {
+      if (confirm("Bạn có chắc chắn muốn đăng xuất?")) await logout();
+    };
 
-  onAuthStateChanged(auth, (user) => {
-    userEmail.textContent = user ? user.email : "";
-  });
+    btnBack.onclick = () => location.replace("dashboard.html");
+    btnAdd.onclick = () => location.replace("post-song.html");
+    btnReload.onclick = () => loadSongs();
 
-  document.getElementById("btnLogout").onclick = logout;
+    let allSongs = [];
 
-  // ➕ Thêm bài hát (trang khác)
-  document.getElementById("btnAdd").onclick = () => {
-    location.replace("post-song.html");
-  };
+    async function updateSidebarBadges() {
+      try {
+        const [newsS, banS, docS, compS, songS, charS] = await Promise.all([
+          getCountFromServer(collection(db, "news")).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(collection(db, "banners")).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(collection(db, "documents")).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(collection(db, "competitions")).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(collection(db, "songs")).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(collection(db, "characters_events")).catch(() => ({ data: () => ({ count: 0 }) }))
+        ]);
+        document.getElementById("sideCountNews").textContent = newsS.data().count || 0;
+        document.getElementById("sideCountBanners").textContent = banS.data().count || 0;
+        document.getElementById("sideCountDocs").textContent = docS.data().count || 0;
+        document.getElementById("sideCountCompetitions").textContent = compS.data().count || 0;
+        document.getElementById("sideCountSongs").textContent = songS.data().count || 0;
+        document.getElementById("sideCountChars").textContent = charS.data().count || 0;
+      } catch (err) {
+        console.warn("Sidebar count error:", err);
+      }
+    }
 
-  // ⬅ Back
-  document.getElementById("btnBack").onclick = () => {
-    location.replace("dashboard.html");
-  };
-
-  const bodyEl = document.getElementById("songBody");
-  const emptyEl = document.getElementById("emptyMsg");
-
-  // Cloud Function xóa Cloudinary (nếu có)
-  const functions = getFunctions(undefined, "us-central1");
-  const deleteCloudinaryAudios =
-    httpsCallable(functions, "deleteCloudinaryAudios");
-
-  async function loadSongs() {
-    try {
-      const q = query(
-        collection(db, "songs"),
-        orderBy("created_at", "desc")
-      );
-
-      const snap = await getDocs(q);
+    function renderSongList(items) {
       bodyEl.innerHTML = "";
 
-      if (snap.empty) {
-        emptyEl.style.display = "block";
+      if (!items.length) {
+        emptyEl.classList.remove("hidden");
         return;
       }
 
-      emptyEl.style.display = "none";
+      emptyEl.classList.add("hidden");
 
-      snap.forEach(docSnap => {
-        const s = docSnap.data();
-
-        // 👉 LỌC CATEGORY BẰNG JS (AN TOÀN)
-        if (s.category !== "quy_dinh") return;
+      items.forEach((item, index) => {
+        const s = item.data;
+        const id = item.id;
 
         const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50/80 transition-colors group";
         tr.innerHTML = `
-          <td>${s.title || ""}</td>
-          <td>${s.author || ""}</td>
-          <td>
+          <td class="py-3 px-4 text-center align-middle text-xs font-semibold text-slate-400">
+            ${index + 1}
+          </td>
+          <td class="py-3 px-4 align-middle">
+            <p class="font-bold text-slate-800 text-sm leading-snug">${s.title || "(Không có tên bài hát)"}</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">ID: ${id}</p>
+          </td>
+          <td class="py-3 px-4 align-middle text-xs font-semibold text-slate-600">
+            ${s.author || "Chưa cập nhật"}
+          </td>
+          <td class="py-3 px-4 align-middle">
             ${
               s.audio_url
-                ? `<audio controls src="${s.audio_url}"></audio>`
-                : ""
+                ? `<audio controls src="${s.audio_url}" class="w-full max-w-[240px] rounded-lg shadow-2xs"></audio>`
+                : `<span class="text-xs text-slate-400 italic">Chưa có tệp audio</span>`
             }
           </td>
-          <td class="actions">
-            <button class="btn btn-edit">Sửa</button>
-            <button class="btn btn-delete">Xóa</button>
+          <td class="py-3 px-4 align-middle text-right whitespace-nowrap">
+            <div class="flex items-center justify-end space-x-2">
+              <button class="btn-edit inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 hover:border-blue-600 text-xs font-semibold transition-all shadow-2xs" title="Chỉnh sửa bài hát">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Sửa</span>
+              </button>
+
+              <button class="btn-delete inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 hover:border-rose-600 text-xs font-semibold transition-all shadow-2xs" title="Xóa bài hát">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Xóa</span>
+              </button>
+            </div>
           </td>
         `;
 
         tr.querySelector(".btn-edit").onclick = () => {
-          location.replace(`post-song.html?id=${docSnap.id}`);
+          location.replace(`post-song.html?id=${id}`);
         };
 
-        tr
         tr.querySelector(".btn-delete").onclick = async () => {
-          if (!confirm("Xóa bài hát này?")) return;
+          if (!confirm(`Bạn có chắc chắn muốn xóa ca khúc "${s.title || id}"?`)) return;
 
           try {
             if (s.audio_public_id) {
-              await deleteCloudinaryAudios({
-                public_ids: [s.audio_public_id]
-              });
+              try {
+                await deleteCloudinaryAudios({ public_ids: [s.audio_public_id] });
+              } catch (cErr) {
+                console.warn("Lỗi xóa Cloudinary audio:", cErr);
+              }
             }
 
-            await deleteDoc(doc(db, "songs", docSnap.id));
+            await deleteDoc(doc(db, "songs", id));
             loadSongs();
-
           } catch (err) {
-            console.error(err);
-            alert("❌ Không thể xóa bài hát");
+            console.error("Lỗi xóa bài hát:", err);
+            alert("❌ Không thể xóa bài hát. Vui lòng thử lại!");
           }
         };
 
         bodyEl.appendChild(tr);
       });
-
-      if (!bodyEl.children.length) {
-        emptyEl.style.display = "block";
-      }
-
-    } catch (e) {
-      console.error("Load songs error:", e);
-      emptyEl.style.display = "block";
-      emptyEl.textContent = "Không thể tải danh sách bài hát";
     }
-  }
 
+    async function loadSongs() {
+      if (reloadIcon) reloadIcon.classList.add("animate-spin");
+      try {
+        const q = query(collection(db, "songs"), orderBy("created_at", "desc"));
+        const snap = await getDocs(q);
 
-  loadSongs();
-</script>
+        allSongs = [];
+        snap.forEach(docSnap => {
+          const s = docSnap.data();
+          if (s.category === "quy_dinh" || !s.category) {
+            allSongs.push({ id: docSnap.id, data: s });
+          }
+        });
 
+        totalSongsBadge.textContent = `${allSongs.length} bài hát`;
+        renderSongList(allSongs);
+        updateSidebarBadges();
+      } catch (e) {
+        console.error("Lỗi load bài hát:", e);
+        bodyEl.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-8 text-center text-rose-500 text-xs font-semibold">
+              ❌ Không thể tải danh sách bài hát. Vui lòng kiểm tra kết nối mạng.
+            </td>
+          </tr>
+        `;
+      } finally {
+        if (reloadIcon) reloadIcon.classList.remove("animate-spin");
+      }
+    }
+
+    searchInput?.addEventListener("input", (e) => {
+      const keyword = e.target.value.toLowerCase().trim();
+      if (!keyword) {
+        renderSongList(allSongs);
+        return;
+      }
+      const filtered = allSongs.filter(item => {
+        const title = (item.data.title || "").toLowerCase();
+        const author = (item.data.author || "").toLowerCase();
+        return title.includes(keyword) || author.includes(keyword);
+      });
+      renderSongList(filtered);
+    });
+
+    loadSongs();
+  </script>
 </body>
 </html>

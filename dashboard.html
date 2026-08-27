@@ -2,275 +2,1017 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard – Chính trị số</title>
+  <title>Trang Tổng Quan – Hệ Thống Quản Trị Chính Trị Số</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                   Roboto, Helvetica, Arial, sans-serif;
-      background: #f4f6f8;
-      color: #333;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
     }
-
-    /* ===== HEADER ===== */
-    header {
-      background: #0d47a1;
-      color: #fff;
-      padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
     }
-
-    header h1 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
     }
-
-    .user-info {
-      margin-right: 12px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #ffffff;        /* 👈 BẮT BUỘC */
-      opacity: 1;            /* 👈 bỏ mờ */
-    }
-
-    .btn {
-      padding: 8px 14px;
-      border: none;
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
       border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
     }
-
-    .btn-logout {
-      background: #fff;
-      color: #0d47a1;
-    }
-
-    /* ===== LAYOUT ===== */
-    .layout {
-      display: flex;
-      min-height: calc(100vh - 64px);
-    }
-
-    /* ===== SIDEBAR ===== */
-    .sidebar {
-      width: 240px;
-      background: #ffffff;
-      border-right: 1px solid #ddd;
-      padding: 16px 0;
-    }
-
-    .sidebar h3 {
-      margin: 0 16px 12px;
-      font-size: 13px;
-      color: #777;
-      text-transform: uppercase;
-    }
-
-    .menu a {
-      display: block;
-      padding: 12px 20px;
-      color: #333;
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .menu a:hover {
-      background: #f0f3f7;
-    }
-
-    .menu a.active {
-      background: #e3f2fd;
-      color: #0d47a1;
-      font-weight: 600;
-    }
-
-    /* ===== CONTENT ===== */
-    .content {
-      flex: 1;
-      padding: 24px;
-    }
-
-    .content h2 {
-      margin-top: 0;
-      font-size: 22px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .card h4 {
-      margin: 0 0 8px;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .card .value {
-      font-size: 26px;
-      font-weight: bold;
-      color: #0d47a1;
-    }
-
-    footer {
-      margin-top: 40px;
-      font-size: 12px;
-      color: #999;
-      text-align: center;
-    }
-
-    @media (max-width: 768px) {
-      .layout {
-        flex-direction: column;
-      }
-      .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-      }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
   </style>
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
-  <!-- ===== HEADER ===== -->
-  <header>
-    <h1>📊 Dashboard – Chính trị số</h1>
-    <div>
-      <span class="user-info" id="userEmail"></span>
-      <button class="btn btn-logout" id="btnLogout">Đăng xuất</button>
+  <!-- ===== TOP HEADER ===== -->
+  <header class="sticky top-0 z-30 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Brand & Mobile Toggle -->
+        <div class="flex items-center space-x-3">
+          <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none" aria-label="Mở menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          
+          <a href="dashboard.html" class="flex items-center space-x-3 group">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-bold text-lg">
+              CS
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-base tracking-tight text-white group-hover:text-blue-400 transition-colors">CHÍNH TRỊ SỐ</span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">Admin CMS</span>
+              </div>
+              <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Cổng thông tin & Quản trị nội dung tập trung</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Right Side: Clock, Status, User & Logout -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <!-- Real-time Clock -->
+          <div class="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-slate-800/80 rounded-lg border border-slate-700/60 text-xs text-slate-300">
+            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="liveClock" class="font-mono font-medium">--:--:--</span>
+          </div>
+
+          <!-- System Status Pill -->
+          <div class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Hệ thống trực tuyến</span>
+          </div>
+
+          <!-- Admin User Profile -->
+          <div class="flex items-center space-x-2.5 pl-2 border-l border-slate-700/70">
+            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-200 text-xs font-semibold uppercase" id="userAvatar">
+              AD
+            </div>
+            <div class="hidden lg:block text-left text-xs">
+              <p class="font-medium text-slate-200 truncate max-w-[150px]" id="userEmail">Đang kết nối...</p>
+              <p class="text-[10px] text-slate-400">Quản trị viên cấp cao</p>
+            </div>
+            <button id="btnLogout" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-rose-600 border border-slate-700 hover:border-rose-500 rounded-lg transition-all shadow-sm" title="Đăng xuất khỏi hệ thống">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span class="hidden sm:inline">Đăng xuất</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- ===== BODY ===== -->
-  <div class="layout">
+  <!-- ===== MAIN WRAPPER ===== -->
+  <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <h3>Quản trị</h3>
-      <nav class="menu">
-        <a href="dashboard.html" class="active">Dashboard</a>
-        <a href="manage-news.html">📰 Quản lý bài viết</a>
-        <a href="manage-banner.html">📣 Quản lý banner</a>
-        <a href="manage-docs.html">📚 Quản lý tài liệu</a>
-        <a href="manage-competition.html">🏆 Quản lý cuộc thi</a>
-        <a href="manage-songs.html">🎧 Các bài hát quy định</a>
-        <a href="manage-characters-events.html">📅 Nhân vật & Sự kiện</a>
-      </nav>
+    <!-- ===== SIDEBAR NAVIGATION ===== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 shadow-xl transition-transform duration-300 transform -translate-x-full lg:translate-x-0 lg:static lg:w-60 lg:shadow-none lg:border lg:rounded-2xl lg:bg-white lg:self-start lg:shrink-0">
+      <div class="h-full flex flex-col p-4">
+        
+        <!-- Mobile Sidebar Close Button -->
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 lg:hidden">
+          <span class="font-bold text-slate-800 text-sm">Danh Mục Quản Trị</span>
+          <button id="closeSidebarBtn" class="p-1 rounded-md text-slate-500 hover:bg-slate-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Section: Overview -->
+        <div class="mb-4">
+          <p class="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Trung tâm điều hành</p>
+          <nav class="space-y-1">
+            <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl bg-blue-50 text-blue-700 font-semibold text-sm border border-blue-100/80 shadow-xs">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span>Trang Tổng Quan</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Section: Content Management -->
+        <div class="mb-4">
+          <p class="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Quản lý nội dung</p>
+          <nav class="space-y-1">
+            <a href="manage-news.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📰</span>
+                <span>Bài viết tin tức</span>
+              </div>
+              <span id="sideCountNews" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-banner.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📣</span>
+                <span>Banner sự kiện</span>
+              </div>
+              <span id="sideCountBanners" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-docs.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📚</span>
+                <span>Văn bản & Tài liệu</span>
+              </div>
+              <span id="sideCountDocs" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-competition.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">🏆</span>
+                <span>Cuộc thi trực tuyến</span>
+              </div>
+              <span id="sideCountCompetitions" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-songs.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">🎧</span>
+                <span>Bài hát quy định</span>
+              </div>
+              <span id="sideCountSongs" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+
+            <a href="manage-characters-events.html" class="flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:text-blue-700 hover:bg-slate-50 transition-colors text-sm font-medium">
+              <div class="flex items-center space-x-3">
+                <span class="text-base">📅</span>
+                <span>Nhân vật & Sự kiện</span>
+              </div>
+              <span id="sideCountChars" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold">—</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Sidebar Footer Note -->
+        <div class="mt-auto pt-4 border-t border-slate-100 text-center">
+          <p class="text-[11px] text-slate-400 font-medium">Hệ thống Quản trị v2.4</p>
+        </div>
+
+      </div>
     </aside>
 
-    <!-- CONTENT -->
-    <main class="content">
-      <h2>Xin chào 👋</h2>
-      <p>Chào mừng bạn đến với hệ thống quản trị nội dung <b>Chính trị số</b>.</p>
+    <!-- Mobile Backdrop -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 hidden lg:hidden"></div>
 
-      <div class="cards">
-        <div class="card">
-          <h4>Tổng số bài viết</h4>
-          <div class="value" id="totalNews">—</div>
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="flex-1 min-w-0">
+
+      <!-- WELCOME HERO BANNER -->
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 text-white p-6 sm:p-8 shadow-lg border border-slate-800 mb-6">
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-blue-600/10 to-transparent pointer-events-none"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-medium">
+              <span id="timeGreeting">Xin chào Quản trị viên</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Bảng Tổng Quan Hoạt Động Hệ Thống
+            </h1>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Theo dõi và quản lý dữ liệu số hóa, bài viết chính trị, văn bản chỉ đạo, banner truyền thông và các cuộc thi trực tuyến.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="btnRefreshStats" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl backdrop-blur-sm border border-white/20 transition-all active:scale-95 shadow-sm">
+              <svg id="refreshIcon" class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Làm mới số liệu</span>
+            </button>
+            <a href="post-news.html" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Đăng Bài Mới</span>
+            </a>
+          </div>
         </div>
 
-        <div class="card">
-          <h4>Bài viết hôm nay</h4>
-          <div class="value" id="todayNews">—</div>
-        </div>
-
-        <div class="card">
-          <h4>Tài liệu</h4>
-          <div class="value" id="totalDocs">—</div>
+        <!-- Quick Summary Mini-Bar -->
+        <div class="relative z-10 mt-6 pt-5 border-t border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div>
+            <span class="text-slate-400">Thời gian cập nhật:</span>
+            <p id="lastUpdateTime" class="font-semibold text-slate-200 mt-0.5">Vừa xong</p>
+          </div>
+          <div>
+            <span class="text-slate-400">Cơ sở dữ liệu:</span>
+            <p class="font-semibold text-emerald-300 mt-0.5 flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+              <span>Firestore Cloud</span>
+            </p>
+          </div>
+          <div>
+            <span class="text-slate-400">Lưu trữ hình ảnh / Media:</span>
+            <p class="font-semibold text-sky-300 mt-0.5">Cloudinary CDN</p>
+          </div>
+          <div>
+            <span class="text-slate-400">Trạng thái phiên:</span>
+            <p class="font-semibold text-amber-300 mt-0.5">Xác thực hợp lệ</p>
+          </div>
         </div>
       </div>
 
-      <footer>
-        © 2026 – Hệ thống quản trị nội dung Chính trị số
+      <!-- ===== 6 METRIC KPI CARDS GRID ===== -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+        
+        <!-- CARD 1: Tin tức / Bài viết -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tin tức & Bài viết</span>
+              <div class="text-3xl font-extrabold text-slate-900 tracking-tight" id="totalNews">
+                <span class="inline-block w-8 h-8 bg-slate-100 rounded animate-pulse"></span>
+              </div>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+              📰
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 flex items-center space-x-1">
+              <span class="font-semibold text-blue-600" id="todayNews">0</span>
+              <span class="text-slate-400">bài đăng hôm nay</span>
+            </span>
+            <a href="manage-news.html" class="text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center space-x-1 group-hover:underline">
+              <span>Quản lý</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 2: Banner & Quảng bá -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Banner & Chiến dịch</span>
+              <div class="text-3xl font-extrabold text-slate-900 tracking-tight" id="totalBanners">
+                <span class="inline-block w-8 h-8 bg-slate-100 rounded animate-pulse"></span>
+              </div>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+              📣
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 flex items-center space-x-1">
+              <span class="font-semibold text-emerald-600" id="activeBanners">0</span>
+              <span class="text-slate-400">đang hiển thị</span>
+            </span>
+            <a href="manage-banner.html" class="text-amber-600 hover:text-amber-800 font-semibold inline-flex items-center space-x-1 group-hover:underline">
+              <span>Quản lý</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 3: Văn bản & Tài liệu -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Văn bản & Tài liệu</span>
+              <div class="text-3xl font-extrabold text-slate-900 tracking-tight" id="totalDocs">
+                <span class="inline-block w-8 h-8 bg-slate-100 rounded animate-pulse"></span>
+              </div>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+              📚
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-500">Kho tài liệu số hóa</span>
+            <a href="manage-docs.html" class="text-emerald-600 hover:text-emerald-800 font-semibold inline-flex items-center space-x-1 group-hover:underline">
+              <span>Quản lý</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 4: Cuộc thi trực tuyến -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Cuộc thi trực tuyến</span>
+              <div class="text-3xl font-extrabold text-slate-900 tracking-tight" id="totalCompetitions">
+                <span class="inline-block w-8 h-8 bg-slate-100 rounded animate-pulse"></span>
+              </div>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+              🏆
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 flex items-center space-x-1">
+              <span class="font-semibold text-purple-600" id="activeCompetitions">0</span>
+              <span class="text-slate-400">đang mở thi</span>
+            </span>
+            <a href="manage-competition.html" class="text-purple-600 hover:text-purple-800 font-semibold inline-flex items-center space-x-1 group-hover:underline">
+              <span>Quản lý</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 5: Bài hát quy định -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Bài hát quy định</span>
+              <div class="text-3xl font-extrabold text-slate-900 tracking-tight" id="totalSongs">
+                <span class="inline-block w-8 h-8 bg-slate-100 rounded animate-pulse"></span>
+              </div>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+              🎧
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-500">Kho ca khúc & audio</span>
+            <a href="manage-songs.html" class="text-rose-600 hover:text-rose-800 font-semibold inline-flex items-center space-x-1 group-hover:underline">
+              <span>Quản lý</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 6: Nhân vật & Sự kiện -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Nhân vật & Sự kiện</span>
+              <div class="text-3xl font-extrabold text-slate-900 tracking-tight" id="totalCharactersEvents">
+                <span class="inline-block w-8 h-8 bg-slate-100 rounded animate-pulse"></span>
+              </div>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+              📅
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-600 space-x-2">
+              <span class="text-slate-700 font-medium"><b class="text-blue-600" id="countCharacters">0</b> nhân vật</span>
+              <span class="text-slate-300">|</span>
+              <span class="text-slate-700 font-medium"><b class="text-amber-600" id="countEvents">0</b> sự kiện</span>
+            </span>
+            <a href="manage-characters-events.html" class="text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center space-x-1 group-hover:underline">
+              <span>Quản lý</span>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== 2-COLUMN DETAILED OVERVIEW CONTENT ===== -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        
+        <!-- LEFT COLUMN (2 Cols): Recent Articles & Campaigns -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Section: Recent Articles -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                <h2 class="font-bold text-slate-800 text-sm sm:text-base">Bài viết mới cập nhật</h2>
+              </div>
+              <div class="flex items-center space-x-2">
+                <a href="post-news.html" class="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors">
+                  + Thêm bài mới
+                </a>
+                <a href="manage-news.html" class="text-xs font-medium text-slate-500 hover:text-slate-800">
+                  Xem tất cả →
+                </a>
+              </div>
+            </div>
+
+            <!-- Articles List -->
+            <div id="recentNewsContainer" class="divide-y divide-slate-100">
+              <div class="p-8 text-center text-slate-400 text-sm flex flex-col items-center justify-center space-y-2">
+                <svg class="w-6 h-6 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Đang tải danh sách bài viết...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Ongoing Banners & Competitions -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            
+            <!-- Mini Card: Active Banners -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center space-x-2">
+                  <span class="text-base">📣</span>
+                  <h3 class="font-bold text-slate-800 text-sm">Banner truyền thông</h3>
+                </div>
+                <a href="manage-banner.html" class="text-xs text-blue-600 hover:underline font-medium">Chi tiết</a>
+              </div>
+              <div id="activeBannersContainer" class="space-y-2.5 flex-1">
+                <div class="text-xs text-slate-400 py-3 text-center">Đang tải dữ liệu...</div>
+              </div>
+            </div>
+
+            <!-- Mini Card: Active Competitions -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center space-x-2">
+                  <span class="text-base">🏆</span>
+                  <h3 class="font-bold text-slate-800 text-sm">Cuộc thi trực tuyến</h3>
+                </div>
+                <a href="manage-competition.html" class="text-xs text-blue-600 hover:underline font-medium">Chi tiết</a>
+              </div>
+              <div id="activeCompetitionsContainer" class="space-y-2.5 flex-1">
+                <div class="text-xs text-slate-400 py-3 text-center">Đang tải dữ liệu...</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN (1 Col): Distribution, System Stats & Quick Links -->
+        <div class="space-y-6">
+
+          <!-- Content Distribution Breakdown -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <h3 class="font-bold text-slate-800 text-sm pb-3 border-b border-slate-100 mb-4 flex items-center justify-between">
+              <span>Phân bố nội dung hệ thống</span>
+              <span class="text-[11px] font-normal text-slate-400">Tỷ lệ danh mục</span>
+            </h3>
+
+            <div class="space-y-3.5">
+              <!-- Item: Tin tức -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>📰 Tin tức & Bài viết</span>
+                  <span id="distPercentNews">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="distBarNews" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Item: Văn bản -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>📚 Văn bản & Tài liệu</span>
+                  <span id="distPercentDocs">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="distBarDocs" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Item: Banner -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>📣 Banner truyền thông</span>
+                  <span id="distPercentBanners">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="distBarBanners" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Item: Cuộc thi -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>🏆 Cuộc thi trực tuyến</span>
+                  <span id="distPercentCompetitions">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="distBarCompetitions" class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Item: Bài hát -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>🎧 Bài hát quy định</span>
+                  <span id="distPercentSongs">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="distBarSongs" class="bg-rose-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Item: Nhân vật & Sự kiện -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>📅 Nhân vật & Sự kiện</span>
+                  <span id="distPercentChars">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="distBarChars" class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Tổng số mục dữ liệu:</span>
+              <span id="totalAllItems" class="font-bold text-slate-800 text-sm">0</span>
+            </div>
+          </div>
+
+          <!-- Technical Specs & System Info -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3.5">
+            <h3 class="font-bold text-slate-800 text-sm pb-2.5 border-b border-slate-100 flex items-center justify-between">
+              <span>Thông tin hạ tầng & phiên</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Hoạt động tốt</span>
+            </h3>
+            <div class="space-y-2.5 text-xs text-slate-600">
+              <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                <span class="text-slate-400">Phiên bản cổng CMS:</span>
+                <span class="font-semibold text-slate-800">v2.4.0 (Enterprise)</span>
+              </div>
+              <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                <span class="text-slate-400">Cơ chế xác thực:</span>
+                <span class="font-semibold text-slate-800">Firebase Auth & RBAC</span>
+              </div>
+              <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                <span class="text-slate-400">Thời gian máy chủ:</span>
+                <span class="font-mono font-medium text-slate-800" id="serverTimeZone">Asia/Ho_Chi_Minh</span>
+              </div>
+              <div class="flex items-center justify-between py-1">
+                <span class="text-slate-400">Bảo mật giao tiếp:</span>
+                <span class="font-medium text-blue-600">SSL / TLS 1.3 End-to-End</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===== FOOTER ===== -->
+      <footer class="mt-8 pt-6 border-t border-slate-200 text-center text-xs text-slate-400 space-y-1">
+        <p>© 2026 <b>Chính trị số</b> – Cổng thông tin & Hệ thống quản trị nội dung số toàn diện.</p>
+        <p>Bản quyền thuộc cơ quan chủ quản. Đảm bảo an toàn, bảo mật thông tin theo tiêu chuẩn hiện hành.</p>
       </footer>
+
     </main>
   </div>
 
-  <!-- ===== SCRIPT ===== -->
+  <!-- ===== FIREBASE & DASHBOARD REAL-TIME LOGIC ===== -->
   <script type="module">
-  import { requireAuth, logout } from "./js/auth.js";
-  import { auth, db } from "./js/firebase.js";
-  import {
-    collection,
-    getCountFromServer,
-    query,
-    where,
-    Timestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { requireAuth, logout } from "./js/auth.js";
+    import { auth, db } from "./js/firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      collection,
+      getCountFromServer,
+      getDocs,
+      query,
+      where,
+      orderBy,
+      limit,
+      Timestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // 🔐 Bảo vệ trang
-  requireAuth();
+    // 🔐 Bảo vệ trang bằng Auth
+    requireAuth();
 
-  const userEmail = document.getElementById("userEmail");
-  const btnLogout = document.getElementById("btnLogout");
+    // UI Elements
+    const userEmailEl = document.getElementById("userEmail");
+    const userAvatarEl = document.getElementById("userAvatar");
+    const btnLogout = document.getElementById("btnLogout");
+    const btnRefreshStats = document.getElementById("btnRefreshStats");
+    const refreshIcon = document.getElementById("refreshIcon");
+    const timeGreetingEl = document.getElementById("timeGreeting");
+    const liveClockEl = document.getElementById("liveClock");
+    const lastUpdateTimeEl = document.getElementById("lastUpdateTime");
 
-  btnLogout.addEventListener("click", logout);
+    // Sidebar Mobile Elements
+    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 
-  // Hiển thị email admin
-  import { onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      userEmail.textContent = user.email;
-    } else {
-      userEmail.textContent = "";
+    // Mobile Sidebar Toggling
+    function toggleMobileSidebar(open) {
+      if (open) {
+        sidebar.classList.remove("-translate-x-full");
+        sidebarBackdrop.classList.remove("hidden");
+      } else {
+        sidebar.classList.add("-translate-x-full");
+        sidebarBackdrop.classList.add("hidden");
+      }
     }
-  });
 
+    mobileMenuBtn?.addEventListener("click", () => toggleMobileSidebar(true));
+    closeSidebarBtn?.addEventListener("click", () => toggleMobileSidebar(false));
+    sidebarBackdrop?.addEventListener("click", () => toggleMobileSidebar(false));
 
-  // ===== THỐNG KÊ =====
-  async function loadStats() {
-    const newsCol = collection(db, "news");
-    const docsCol = collection(db, "documents");
+    // Handle Logout with confirmation
+    btnLogout.addEventListener("click", async () => {
+      if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+        await logout();
+      }
+    });
 
-    // Tổng bài viết
-    const newsSnap = await getCountFromServer(newsCol);
-    document.getElementById("totalNews").textContent =
-      newsSnap.data().count;
+    // Real-time Clock & Dynamic Greeting
+    function updateClock() {
+      const now = new Date();
+      if (liveClockEl) {
+        liveClockEl.textContent = now.toLocaleTimeString("vi-VN", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
 
-    // Bài viết hôm nay
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
+      const hour = now.getHours();
+      let greeting = "Chào ngày mới, Quản trị viên!";
+      if (hour >= 5 && hour < 12) {
+        greeting = "Chào buổi sáng, Quản trị viên!";
+      } else if (hour >= 12 && hour < 18) {
+        greeting = "Chào buổi chiều, Quản trị viên!";
+      } else {
+        greeting = "Chào buổi tối, Quản trị viên!";
+      }
+      if (timeGreetingEl) {
+        timeGreetingEl.textContent = greeting;
+      }
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-    const todayQuery = query(
-      newsCol,
-      where("created_at", ">=", Timestamp.fromDate(start))
-    );
+    // Auth State Listener for User Profile
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email) {
+        userEmailEl.textContent = user.email;
+        const initial = user.email.charAt(0).toUpperCase();
+        userAvatarEl.textContent = initial || "AD";
+      } else {
+        userEmailEl.textContent = "Chưa đăng nhập";
+      }
+    });
 
-    const todaySnap = await getCountFromServer(todayQuery);
-    document.getElementById("todayNews").textContent =
-      todaySnap.data().count;
+    // Helper: Safe Date Formatting
+    function formatDateTime(ts) {
+      if (!ts) return "Chưa cập nhật";
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      } catch {
+        return "Chưa cập nhật";
+      }
+    }
 
-    // Tài liệu
-    const docsSnap = await getCountFromServer(docsCol);
-    document.getElementById("totalDocs").textContent =
-      docsSnap.data().count;
-  }
+    // Helper: Banner / Competition Status
+    function calculateTimeStatus(startTime, endTime) {
+      if (!startTime || !endTime) return { text: "Chưa xác định", cls: "bg-slate-100 text-slate-600" };
+      try {
+        const now = new Date();
+        const start = startTime.toDate ? startTime.toDate() : new Date(startTime);
+        const end = endTime.toDate ? endTime.toDate() : new Date(endTime);
 
-  loadStats();
-</script>
+        if (now < start) {
+          return { text: "Sắp diễn ra", cls: "bg-blue-50 text-blue-700 border border-blue-200" };
+        } else if (now >= start && now <= end) {
+          return { text: "Đang diễn ra", cls: "bg-emerald-50 text-emerald-700 border border-emerald-200" };
+        } else {
+          return { text: "Đã kết thúc", cls: "bg-slate-100 text-slate-500 border border-slate-200" };
+        }
+      } catch {
+        return { text: "Không rõ", cls: "bg-slate-100 text-slate-500" };
+      }
+    }
 
+    // ===== LOAD DASHBOARD METRICS & RECENT FEEDS =====
+    async function loadAllDashboardData() {
+      if (refreshIcon) refreshIcon.classList.add("animate-spin");
 
+      try {
+        const newsCol = collection(db, "news");
+        const bannersCol = collection(db, "banners");
+        const docsCol = collection(db, "documents");
+        const compCol = collection(db, "competitions");
+        const songsCol = collection(db, "songs");
+        const charEventCol = collection(db, "characters_events");
 
+        // 1. Fetch total counts concurrently with safe fallbacks
+        const [
+          newsSnap,
+          bannersSnap,
+          docsSnap,
+          compSnap,
+          songsSnap,
+          charEventSnap
+        ] = await Promise.all([
+          getCountFromServer(newsCol).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(bannersCol).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(docsCol).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(compCol).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(songsCol).catch(() => ({ data: () => ({ count: 0 }) })),
+          getCountFromServer(charEventCol).catch(() => ({ data: () => ({ count: 0 }) }))
+        ]);
+
+        const countNews = newsSnap.data().count || 0;
+        const countBanners = bannersSnap.data().count || 0;
+        const countDocs = docsSnap.data().count || 0;
+        const countCompetitions = compSnap.data().count || 0;
+        const countSongs = songsSnap.data().count || 0;
+        const countCharEvents = charEventSnap.data().count || 0;
+
+        // Update KPI Cards
+        document.getElementById("totalNews").textContent = countNews.toLocaleString("vi-VN");
+        document.getElementById("totalBanners").textContent = countBanners.toLocaleString("vi-VN");
+        document.getElementById("totalDocs").textContent = countDocs.toLocaleString("vi-VN");
+        document.getElementById("totalCompetitions").textContent = countCompetitions.toLocaleString("vi-VN");
+        document.getElementById("totalSongs").textContent = countSongs.toLocaleString("vi-VN");
+        document.getElementById("totalCharactersEvents").textContent = countCharEvents.toLocaleString("vi-VN");
+
+        // Update Sidebar badging
+        document.getElementById("sideCountNews").textContent = countNews;
+        document.getElementById("sideCountBanners").textContent = countBanners;
+        document.getElementById("sideCountDocs").textContent = countDocs;
+        document.getElementById("sideCountCompetitions").textContent = countCompetitions;
+        document.getElementById("sideCountSongs").textContent = countSongs;
+        document.getElementById("sideCountChars").textContent = countCharEvents;
+
+        // 2. Fetch News Today Count
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        try {
+          const todayNewsQuery = query(
+            newsCol,
+            where("created_at", ">=", Timestamp.fromDate(startOfDay))
+          );
+          const todaySnap = await getCountFromServer(todayNewsQuery);
+          document.getElementById("todayNews").textContent = todaySnap.data().count || 0;
+        } catch {
+          document.getElementById("todayNews").textContent = "0";
+        }
+
+        // 3. Detailed Character vs Event count
+        try {
+          const charQuery = query(charEventCol, where("type", "==", "character"));
+          const eventQuery = query(charEventCol, where("type", "==", "event"));
+          const [cSnap, eSnap] = await Promise.all([
+            getCountFromServer(charQuery).catch(() => ({ data: () => ({ count: 0 }) })),
+            getCountFromServer(eventQuery).catch(() => ({ data: () => ({ count: 0 }) }))
+          ]);
+          document.getElementById("countCharacters").textContent = cSnap.data().count || 0;
+          document.getElementById("countEvents").textContent = eSnap.data().count || 0;
+        } catch {
+          document.getElementById("countCharacters").textContent = "0";
+          document.getElementById("countEvents").textContent = "0";
+        }
+
+        // 4. Calculate Distribution Bar Percentages
+        const totalItems = countNews + countBanners + countDocs + countCompetitions + countSongs + countCharEvents;
+        document.getElementById("totalAllItems").textContent = totalItems.toLocaleString("vi-VN");
+
+        if (totalItems > 0) {
+          const pNews = Math.round((countNews / totalItems) * 100);
+          const pDocs = Math.round((countDocs / totalItems) * 100);
+          const pBanners = Math.round((countBanners / totalItems) * 100);
+          const pCompetitions = Math.round((countCompetitions / totalItems) * 100);
+          const pSongs = Math.round((countSongs / totalItems) * 100);
+          const pChars = Math.round((countCharEvents / totalItems) * 100);
+
+          document.getElementById("distPercentNews").textContent = `${pNews}% (${countNews})`;
+          document.getElementById("distBarNews").style.width = `${pNews}%`;
+
+          document.getElementById("distPercentDocs").textContent = `${pDocs}% (${countDocs})`;
+          document.getElementById("distBarDocs").style.width = `${pDocs}%`;
+
+          document.getElementById("distPercentBanners").textContent = `${pBanners}% (${countBanners})`;
+          document.getElementById("distBarBanners").style.width = `${pBanners}%`;
+
+          document.getElementById("distPercentCompetitions").textContent = `${pCompetitions}% (${countCompetitions})`;
+          document.getElementById("distBarCompetitions").style.width = `${pCompetitions}%`;
+
+          document.getElementById("distPercentSongs").textContent = `${pSongs}% (${countSongs})`;
+          document.getElementById("distBarSongs").style.width = `${pSongs}%`;
+
+          document.getElementById("distPercentChars").textContent = `${pChars}% (${countCharEvents})`;
+          document.getElementById("distBarChars").style.width = `${pChars}%`;
+        }
+
+        // 5. Fetch Recent News (Top 5)
+        const recentNewsContainer = document.getElementById("recentNewsContainer");
+        try {
+          const recentNewsQuery = query(newsCol, orderBy("created_at", "desc"), limit(5));
+          const newsDocsSnap = await getDocs(recentNewsQuery);
+
+          if (newsDocsSnap.empty) {
+            recentNewsContainer.innerHTML = `
+              <div class="p-8 text-center text-slate-400 text-sm">
+                Chưa có bài viết nào trong hệ thống. <a href="post-news.html" class="text-blue-600 underline font-medium">Đăng bài ngay</a>
+              </div>
+            `;
+          } else {
+            recentNewsContainer.innerHTML = "";
+            newsDocsSnap.forEach((docSnap) => {
+              const item = docSnap.data();
+              const docId = docSnap.id;
+              const formattedDate = formatDateTime(item.created_at);
+
+              const row = document.createElement("div");
+              row.className = "p-4 hover:bg-slate-50/80 transition-colors flex items-center justify-between gap-4";
+              row.innerHTML = `
+                <div class="flex items-center space-x-3 min-w-0">
+                  <div class="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center">
+                    ${
+                      item.cover_image
+                        ? `<img src="${item.cover_image}" alt="cover" class="w-full h-full object-cover">`
+                        : `<span class="text-slate-400 text-xs">📰</span>`
+                    }
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-sm font-semibold text-slate-800 hover:text-blue-600 truncate transition-colors">
+                      <a href="post-news.html?id=${docId}">${item.title || "Bài viết không có tiêu đề"}</a>
+                    </h4>
+                    <div class="flex items-center space-x-2 text-[11px] text-slate-400 mt-0.5">
+                      <span>🕒 ${formattedDate}</span>
+                      ${item.category ? `<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">${item.category}</span>` : ""}
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2 shrink-0">
+                  <a href="post-news.html?id=${docId}" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition-colors">
+                    Sửa
+                  </a>
+                </div>
+              `;
+              recentNewsContainer.appendChild(row);
+            });
+          }
+        } catch (err) {
+          console.warn("Could not load recent news with order:", err);
+          recentNewsContainer.innerHTML = `
+            <div class="p-6 text-center text-slate-400 text-xs">
+              Không thể tải danh sách bài viết gần đây. Vui lòng kiểm tra mục <a href="manage-news.html" class="text-blue-600 underline">Quản lý bài viết</a>.
+            </div>
+          `;
+        }
+
+        // 6. Fetch Active Banners List
+        const activeBannersContainer = document.getElementById("activeBannersContainer");
+        try {
+          const bannersSnapDocs = await getDocs(query(bannersCol, orderBy("order", "asc"), limit(4)));
+          if (bannersSnapDocs.empty) {
+            activeBannersContainer.innerHTML = `<p class="text-xs text-slate-400 py-3 text-center">Chưa có banner nào được tạo.</p>`;
+          } else {
+            activeBannersContainer.innerHTML = "";
+            let activeCount = 0;
+            bannersSnapDocs.forEach(d => {
+              const b = d.data();
+              const st = calculateTimeStatus(b.start_time, b.end_time);
+              if (st.text === "Đang diễn ra") activeCount++;
+
+              const div = document.createElement("div");
+              div.className = "flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs";
+              div.innerHTML = `
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded bg-slate-200 shrink-0 overflow-hidden">
+                    ${b.image_url ? `<img src="${b.image_url}" class="w-full h-full object-cover">` : ""}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-slate-800 truncate">${b.title || "Banner"}</p>
+                    <p class="text-[10px] text-slate-400 truncate">${b.type || "Chung"}</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${st.cls}">
+                  ${st.text}
+                </span>
+              `;
+              activeBannersContainer.appendChild(div);
+            });
+            document.getElementById("activeBanners").textContent = activeCount;
+          }
+        } catch {
+          activeBannersContainer.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">Xem tại trang <a href="manage-banner.html" class="text-blue-600">Quản lý banner</a></p>`;
+        }
+
+        // 7. Fetch Active Competitions List
+        const activeCompetitionsContainer = document.getElementById("activeCompetitionsContainer");
+        try {
+          const compSnapDocs = await getDocs(query(compCol, orderBy("created_at", "desc"), limit(4)));
+          if (compSnapDocs.empty) {
+            activeCompetitionsContainer.innerHTML = `<p class="text-xs text-slate-400 py-3 text-center">Chưa có cuộc thi nào được tạo.</p>`;
+          } else {
+            activeCompetitionsContainer.innerHTML = "";
+            let activeCompCount = 0;
+            compSnapDocs.forEach(d => {
+              const c = d.data();
+              const st = calculateTimeStatus(c.start_time, c.end_time);
+              if (st.text === "Đang diễn ra") activeCompCount++;
+
+              const div = document.createElement("div");
+              div.className = "flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs";
+              div.innerHTML = `
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <span class="text-sm">🏆</span>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-slate-800 truncate">${c.title || "Cuộc thi trực tuyến"}</p>
+                    <p class="text-[10px] text-slate-400 truncate">${formatDateTime(c.start_time)}</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${st.cls}">
+                  ${st.text}
+                </span>
+              `;
+              activeCompetitionsContainer.appendChild(div);
+            });
+            document.getElementById("activeCompetitions").textContent = activeCompCount;
+          }
+        } catch {
+          activeCompetitionsContainer.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">Xem tại trang <a href="manage-competition.html" class="text-blue-600">Quản lý cuộc thi</a></p>`;
+        }
+
+        // Update Last Updated Timestamp
+        const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        if (lastUpdateTimeEl) lastUpdateTimeEl.textContent = `${nowTime} hôm nay`;
+
+      } catch (err) {
+        console.error("Dashboard data load error:", err);
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove("animate-spin");
+      }
+    }
+
+    // Refresh Button Event Listener
+    btnRefreshStats?.addEventListener("click", () => {
+      loadAllDashboardData();
+    });
+
+    // Initial Load
+    loadAllDashboardData();
+  </script>
 </body>
 </html>
