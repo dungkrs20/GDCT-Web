@@ -302,6 +302,7 @@
   <script type="module">
     import { requireAuth, logout } from "./js/auth.js";
     import { auth, db } from "./js/firebase.js";
+    import { showConfirmModal } from "./js/confirm-modal.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
       collection,
@@ -378,7 +379,14 @@
     });
 
     btnLogout.onclick = async () => {
-      if (confirm("Bạn có chắc chắn muốn đăng xuất?")) await logout();
+      const confirmed = await showConfirmModal({
+        title: "Xác nhận đăng xuất?",
+        message: "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống quản trị?",
+        confirmText: "Đăng xuất",
+        cancelText: "Ở lại",
+        type: "warning"
+      });
+      if (confirmed) await logout();
     };
 
     btnBack.onclick = () => location.replace("dashboard.html");
@@ -466,7 +474,15 @@
         };
 
         tr.querySelector(".btn-delete").onclick = async () => {
-          if (!confirm(`Bạn có chắc chắn muốn xóa ca khúc "${s.title || id}"?`)) return;
+          const confirmed = await showConfirmModal({
+            title: "Bạn có chắc chắn muốn xóa ca khúc không?",
+            message: "Thao tác này sẽ xóa vĩnh viễn bài hát và tệp âm thanh liên quan khỏi hệ thống.",
+            itemName: s.title || id,
+            itemType: "Bài hát truyền thống",
+            confirmText: "Xác nhận xóa",
+            cancelText: "Hủy bỏ"
+          });
+          if (!confirmed) return;
 
           try {
             if (s.audio_public_id) {

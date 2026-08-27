@@ -622,6 +622,7 @@
   <script type="module">
     import { requireAuth, logout } from "./js/auth.js";
     import { auth, db } from "./js/firebase.js";
+    import { showConfirmModal } from "./js/confirm-modal.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
       collection,
@@ -670,7 +671,14 @@
 
     // Handle Logout with confirmation
     btnLogout.addEventListener("click", async () => {
-      if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+      const confirmed = await showConfirmModal({
+        title: "Xác nhận đăng xuất?",
+        message: "Bạn có chắc chắn muốn đăng xuất khỏi phiên làm việc quản trị?",
+        confirmText: "Đăng xuất",
+        cancelText: "Ở lại",
+        type: "warning"
+      });
+      if (confirmed) {
         await logout();
       }
     });
